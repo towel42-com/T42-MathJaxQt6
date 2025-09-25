@@ -21,12 +21,12 @@
 # SOFTWARE.
 
 set(qtproject_SRCS
-    MathFormulaEngine.cpp
+    Qt6MathJax.cpp
 )
 
 set(qtproject_H
-    MathFormulaEngine.h
-    private/MathFormulaEngine_private.h
+    Qt6MathJax.h
+    private/Qt6MathJax_private.h
 )
 
 set(project_H

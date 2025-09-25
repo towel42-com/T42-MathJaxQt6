@@ -1,4 +1,4 @@
-project( MathFormulaEngine )
+project( Qt6MathJax )
 
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui WebEngineWidgets )
 
