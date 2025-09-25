@@ -1,38 +1,44 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "MathFormulaEngine/MathFormulaEngine.h"
+#include <QSvgWidget>
 
 #define HT 100
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent), ui(new Ui::MainWindow)
+MainWindow::MainWindow( QWidget *parent ) :
+    QMainWindow( parent ),
+    fImpl( new Ui::MainWindow ),
+    fEngine( new CMathFormulaEngine )
 {
-    ui->setupUi(this);
-//    ui->centralWidget->layout()->addWidget( engine.webView() );
-    svg = new QSvgWidget( ui->widget );
-    svg->setMinimumSize( 0, HT );
-    ui->widget->setLayout( new QHBoxLayout( ui->widget ) );
-    ui->widget->layout()->addWidget( svg );
-    connect( ui->lineEdit, SIGNAL(returnPressed()), this, SLOT(runMathJax()) );
+    fImpl->setupUi( this );
+    //    fImpl->centralWidget->layout()->addWidget( engine.webView() );
+    fSVG = new QSvgWidget( fImpl->widget );
+    fSVG->setMinimumSize( 0, HT );
+    fImpl->widget->setLayout( new QHBoxLayout( fImpl->widget ) );
+    fImpl->widget->layout()->addWidget( fSVG );
+    connect( fImpl->lineEdit, SIGNAL( returnPressed() ), this, SLOT( runMathJax() ) );
 }
 
 MainWindow::~MainWindow()
 {
-    delete ui;
 }
 
-void MainWindow::runMathJax ()
+void MainWindow::runMathJax()
 {
-    QString svgCode = engine.TeX2SVG( ui->lineEdit->text() );
-    if ( engine.error().isEmpty() ) {
-        svg->load( svgCode.toUtf8() );
-        ui->plainTextEdit->setPlainText( svgCode );
-    } else {
-//        svg->load( QString( "<svg></svg>" ).toUtf8() );
-        ui->plainTextEdit->setPlainText( engine.error() );
+    QString svgCode = fEngine->svg( fImpl->lineEdit->text() );
+    if ( fEngine->error().isEmpty() )
+    {
+        fSVG->load( svgCode.toUtf8() );
+        fImpl->plainTextEdit->setPlainText( svgCode );
     }
-    QSize s = svg->sizeHint();
-    ui->widget->setMinimumSize( QSize( s.width()*HT/s.height(), HT*1.2 ) );
-    ui->widget->setMaximumSize( QSize( s.width()*HT/s.height(), HT*1.2 ) );
-    ui->widget->layout()->update();
+    else
+    {
+        //        fSVG->load( QString( "<fSVG></fSVG>" ).toUtf8() );
+        fImpl->plainTextEdit->setPlainText( fEngine->error() );
+    }
+    QSize s = fSVG->sizeHint();
+    fImpl->widget->setMinimumSize( QSize( s.width() * HT / s.height(), HT * 1.2 ) );
+    fImpl->widget->setMaximumSize( QSize( s.width() * HT / s.height(), HT * 1.2 ) );
+    fImpl->widget->layout()->update();
 }

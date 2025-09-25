@@ -3,11 +3,14 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QtSvg>
-#include "texengine.h"
+#include <memory>
 
-namespace Ui {
-class MainWindow;
+class QSvgWidget;
+class CMathFormulaEngine;
+
+namespace Ui
+{
+    class MainWindow;
 }
 
 class MainWindow : public QMainWindow
@@ -15,16 +18,16 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow( QWidget *parent = 0 );
     ~MainWindow();
 
 private slots:
-    void runMathJax ();
+    void runMathJax();
 
 private:
-    Ui::MainWindow *ui;
-    QSvgWidget* svg;
-    TeXEngine engine;
+    std::unique_ptr< Ui::MainWindow > fImpl;
+    QSvgWidget *fSVG{ nullptr };
+    CMathFormulaEngine *fEngine{ nullptr };
 };
 
-#endif // MAINWINDOW_H
+#endif   // MAINWINDOW_H
