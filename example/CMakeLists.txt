@@ -37,6 +37,10 @@ endif()
 
 get_filename_component( QTDIR ${DEPLOYQT_EXECUTABLE} DIRECTORY )
 include_directories( ${CMAKE_BINARY_DIR} )
+set ( DEBUG_PATH 
+        "%PATH%"
+        "${QTDIR}"
+        )
 
 set_target_properties( ${PROJECT_NAME} PROPERTIES 
         FOLDER Qt6MathJax 
