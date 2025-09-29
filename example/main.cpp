@@ -1,7 +1,7 @@
 #include "MainWindow.h"
 #include <QApplication>
 
-#include "T42-Qt6MathJax/Qt6MathJax.h"
+#include "lib/Qt6MathJax.h"
 
 #include <QLoggingCategory>
 #include <QDirIterator>

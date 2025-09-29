@@ -25,26 +25,21 @@ project(Qt6MathJax-Example)
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui WebEngineWidgets SvgWidgets )
 
 include( include.cmake )
-include( ${CMAKE_SOURCE_DIR}/SABUtils/QtProject.cmake )
+include( ${CMAKE_SOURCE_DIR}/T42-CMakeUtils/QtProject.cmake )
 
 qt_add_executable( ${PROJECT_NAME} WIN32
                 ${_PROJECT_DEPENDENCIES} 
           )
+
 if ( NOT DEPLOYQT_EXECUTABLE )
     message( FATAL_ERROR "DEPLOYQT_EXECUTABLE not set" )
 endif()
-set_target_properties( ${PROJECT_NAME} PROPERTIES FOLDER App )
-          
+
 get_filename_component( QTDIR ${DEPLOYQT_EXECUTABLE} DIRECTORY )
 include_directories( ${CMAKE_BINARY_DIR} )
-set ( DEBUG_PATH 
-        "%PATH%"
-        "$<TARGET_FILE_DIR:SABUtils>"
-        "${QTDIR}"
-        )
 
 set_target_properties( ${PROJECT_NAME} PROPERTIES 
-        FOLDER App 
+        FOLDER Qt6MathJax 
         VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:${PROJECT_NAME}>" 
         VS_DEBUGGER_COMMAND "$<TARGET_FILE:${PROJECT_NAME}>" 
         VS_DEBUGGER_ENVIRONMENT "PATH=${DEBUG_PATH}" 
@@ -63,5 +58,4 @@ DeploySystem( ${PROJECT_NAME} . INSTALL_ONLY 1 )
 
 INSTALL( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin )
 INSTALL( FILES ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.pdb DESTINATION . CONFIGURATIONS Debug RelWithDebInfo )
-
 

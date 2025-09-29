@@ -1,6 +1,6 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
-#include "T42-Qt6MathJax/Qt6MathJax.h"
+#include "lib/Qt6MathJax.h"
 
 #include <QSvgRenderer>
 
