@@ -5,29 +5,31 @@
 #include <QMainWindow>
 #include <memory>
 
-class QSvgWidget;
-class CMathFormulaEngine;
+class CQt6MathJax;
 
 namespace Ui
 {
-    class MainWindow;
+    class CMainWindow;
 }
 
-class MainWindow : public QMainWindow
+class CMainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit MainWindow( QWidget *parent = 0 );
-    ~MainWindow();
+    explicit CMainWindow( QWidget *parent = 0 );
+    ~CMainWindow();
 
 private slots:
-    void runMathJax();
+    void generate();
+    void slotEngineReady( bool aOK );
+    void slotSVGRendered( const QByteArray &svg );
+    void slotErrorMessage( const QString &msg );
+
 
 private:
-    std::unique_ptr< Ui::MainWindow > fImpl;
-    QSvgWidget *fSVG{ nullptr };
-    CMathFormulaEngine *fEngine{ nullptr };
+    std::unique_ptr< Ui::CMainWindow > fImpl{};
+    CQt6MathJax *fEngine{ nullptr };
 };
 
 #endif   // MAINWINDOW_H

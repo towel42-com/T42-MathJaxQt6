@@ -1,17 +1,17 @@
 set(qtproject_SRCS
-    mainwindow.cpp  
+    MainWindow.cpp  
     main.cpp
 )
 
 set(qtproject_H
-    mainwindow.h
+    MainWindow.h
 )
 
 set(project_H
 )
 
 set(qtproject_UIS
-    mainwindow.ui
+    MainWindow.ui
 )
 
 
@@ -22,5 +22,5 @@ set(qtproject_QRC
         Qt6::Widgets
         Qt6::Core
         Qt6::SvgWidgets
-        MathFormulaEngine
+        Qt6MathJax
 )
