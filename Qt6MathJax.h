@@ -2,30 +2,43 @@
 #define MATHFORMULAENGINE_H
 
 #include <QObject>
-class QWebEngineView;
-class CMathFormulaEngine_Impl;
+#include <QLoggingCategory>
 
-class CMathFormulaEngine : public QObject
+class QWebEngineView;
+class CQt6MathJax_private;
+Q_DECLARE_LOGGING_CATEGORY( Qt6MathJax )
+Q_DECLARE_LOGGING_CATEGORY( Qt6MathJaxConsole )
+Q_DECLARE_LOGGING_CATEGORY( Qt6MathJaxQRC )
+
+
+class CQt6MathJax : public QObject
 {
     Q_OBJECT
 public:
-    CMathFormulaEngine( QObject *parent = nullptr );
-    ~CMathFormulaEngine();
+    CQt6MathJax( QObject *parent = nullptr );
+    ~CQt6MathJax();
 
-    // compute immediately, waiting for result (via processEvents()) before returning it:
-    QString svg( const QString &code );
-
-    // queue computation for later iff it hasn't yet been done; cache result when done:
-    void asyncSVG( const QString &code );
+    // async computation of the svg
+    void renderSVG( const QString &code );
 
     // detect whether a string has already been compiled in the past (i.e., is in cache):
-    bool beenComputed( const QString &code ) const;
-    QString error();
+    bool beenCreated( const QString &code ) const;
+    QString errorMessage() const;
+    bool hasError() const;
 
-    std::shared_ptr< QWebEngineView > webEngineView() const;
+    bool engineReady() const;
+
+
+    QWebEngineView * webEngineView() const;
+    QWidget *webEngineViewWidget() const;
+
+Q_SIGNALS:
+    void sigEngineReady( bool aOK );
+    void sigErrorMessage( const QString &msg );
+    void sigSVGRendered( const QByteArray &svg );
 
 private:
-    CMathFormulaEngine_Impl *fImpl{ nullptr };
+    CQt6MathJax_private *fImpl{ nullptr };
 };
 
 #endif   // TEXENGINE_H

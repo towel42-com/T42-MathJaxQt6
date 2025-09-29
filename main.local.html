@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <script class="show" defer src="MathJax/tex-svg-nofont.js"></script>
+    <script class="show" defer>
+        var inputStr = 'x = {-b \\pm \\sqrt{b^2-4ac} \\over 4a}';
+        document.addEventListener("DOMContentLoaded", function () {
+            console.log("DOM Content Loaded");
+        });
+
+        MathJax = {
+            svg: { fontCache: 'global' },
+            loader: {
+                load: ['[tex]/texhtml']
+            },
+            tex: {
+                packages: { '[+]': ['texhtml'] },
+                formatError(jax, error) {
+                    console.log(`TeX error in "${jax.latex}": ${error.message}`);
+                    return jax.formatError(error);
+                }
+            },
+            options: {
+                enableMenu: false
+            },
+            startup: {
+                ready() {
+                    MathJax.startup.defaultReady();
+                    const doc = MathJax.startup.document;
+                    doc.menu.menu.findID('Settings', 'Renderer').disable();
+                }
+            }
+        };
+
+        const Generate = {
+            async run(input) {
+                const input = document.querySelector('#input').value.trim();
+                if (input == null) {
+                    input = inputStr;
+                }
+                console.log("Input: '" + input + "'");
+
+                const output = document.querySelector('#MathOutput');
+                if (output == null) {
+                    console.error("Could not find output node");
+                    return;
+                }
+                MathJax.texReset();
+
+                const options = MathJax.getMetricsFor(MathOutput);
+                MathJax.startup.document.clear();
+                await MathJax.tex2svgPromise(input, options).then((node) => {
+                    for( const child of node.children ) {
+                        if ( child.tagName == "svg" ) {
+                            console.log( child.outerHTML );
+                        }
+                    }
+                    output.innerHTML = '';
+                    output.appendChild(node);
+                    MathJax.startup.document.updateDocument();
+                }).catch((err) => {
+                    output.innerHTML = `<pre>Error: ${err.message}</pre>`;
+                    console.error(err);
+                })
+            },
+        };
+    </script>
+</head>
+<body>
+    <div id="MathInput" class="show display">
+        <div id="MathOutput"></div>
+        <input type="text" id="input" value="x = {-b \pm \sqrt{b^2-4ac} \over 2a}" />
+        <input type="button" value="Render" id="render" onclick="Interactive.convert()" />
+    </div>
+</body>
+</html>

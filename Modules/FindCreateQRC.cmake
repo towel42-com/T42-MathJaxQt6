@@ -20,36 +20,33 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 FUNCTION( CreateQRC DIRECTORY OUTFILE)
+    get_filename_component( REL_TO_DIR ${OUTFILE} DIRECTORY )
 	MESSAGE( STATUS "Creating ${OUTFILE} QRC for directory ${DIRECTORY}" )
+	MESSAGE( STATUS "    Paths with be relative to ${REL_TO_DIR}" )
 	
-	add_custom_command( 
-		OUTPUT
-			${OUTFILE}
-		MAIN_DEPENDENCY
-			${DIRECTORY}/tex-svg.js
-		COMMAND
-			"${CMAKE_COMMAND}" -E touch ${CMAKE_SOURCE_DIR}/CMakeLists.txt
-		COMMENT
-			"Re-running CMake since ${DIRECTORY}/tex-svg.js has been modified"
-	)
-    
-    file( GLOB_RECURSE  QRC_FILES RELATIVE ${DIRECTORY}/.. CONFIGURE_DEPENDS ${DIRECTORY}/* main.html )
+    file( GLOB_RECURSE  QRC_FILES RELATIVE ${REL_TO_DIR} CONFIGURE_DEPENDS ${DIRECTORY}/* Qt6MathJax.html)
 
     LIST( REMOVE_DUPLICATES QRC_FILES )
     LIST( FILTER QRC_FILES EXCLUDE REGEX ".*\.git.*" )
     LIST( FILTER QRC_FILES EXCLUDE REGEX ".*DS_Store.*" )
 
     LIST( LENGTH QRC_FILES LENGTH)
-    message( STATUS "${LENGTH} QRC resource files found.")
+    message( STATUS "    ${LENGTH} QRC resource files found.")
     
     FILE( WRITE ${OUTFILE}  "<RCC>\n" )
-    FILE( APPEND ${OUTFILE} "    <qresource prefix=\"/\">\n" )
+    FILE( APPEND ${OUTFILE} "    <qresource prefix=\"/Qt6MathJax\">\n" )
+    
     foreach(item IN LISTS QRC_FILES)
-        FILE( APPEND ${OUTFILE} "        <file>${item}</file>\n" )
+        SET( _ALIAS_ITEM ${item} )
+        STRING( REPLACE "../" "" _ALIAS_ITEM ${_ALIAS_ITEM} )
+        STRING( REPLACE "T42-Qt6MathJax/" "" _ALIAS_ITEM ${_ALIAS_ITEM} )
+        
+        FILE( APPEND ${OUTFILE} "        <file alias=\"${_ALIAS_ITEM}\">${item}</file>\n" )
     endforeach()
     FILE( APPEND ${OUTFILE} "    </qresource>\n" )
     FILE( APPEND ${OUTFILE} "</RCC>\n" )
     
+	MESSAGE( STATUS "Finished generating QRC file ${OUTFILE} for directory ${DIRECTORY}" )
 	
 ENDFUNCTION()
 

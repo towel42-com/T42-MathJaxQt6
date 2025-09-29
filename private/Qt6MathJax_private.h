@@ -4,55 +4,79 @@
 #include <QObject>
 #include <QCache>
 #include <memory>
+#include <QWebEnginePage>
 #include <unordered_map>
 #include <optional>
 class QWebEngineView;
-class CMathFormulaEngine;
+class QWebEngineLoadingInfo;
+class CQt6MathJax;
+class QWebEngineNewWindowRequest;
+class QWebChannel;
 
-class CMathFormulaEngine_Impl : public QObject
+class CWebEnginePage_WConsoleLog : public QWebEnginePage
 {
     Q_OBJECT
 public:
-    CMathFormulaEngine_Impl( CMathFormulaEngine *parent );
-    ~CMathFormulaEngine_Impl();
+    explicit CWebEnginePage_WConsoleLog( QObject *parent = nullptr );
 
-    // compute immediately, waiting for result (via processEvents()) before returning it:
-    QString svg( const QString &code );
+Q_SIGNALS:
+    void sigErrorMessage( const QString &msg );
 
-    // queue computation for later iff it hasn't yet been done; cache result when done:
-    void asyncSVG( const QString &code );
+protected:
+    virtual void javaScriptConsoleMessage( JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID ) override;
+};
+
+class CQt6MathJax_private : public QObject
+{
+    Q_OBJECT
+public:
+    CQt6MathJax_private( CQt6MathJax *parent );
+    ~CQt6MathJax_private();
+
+    // all generation is async
+    void renderSVG( const QString &code );
 
     // detect whether a string has already been compiled in the past (i.e., is in cache):
-    std::optional< QString > beenComputed( const QString &code ) const;
+    std::optional< QByteArray > beenCreated( const QString &code ) const;
 
-    QString error();
+    QString errorMessage() const;
+    QWebEngineView *webEngineView() const;
+    bool engineReady() const { return fEngineReady;  }
 
-    std::shared_ptr< QWebEngineView > webEngineView() const;
+    Q_INVOKABLE void finished();
+    Q_INVOKABLE void finishedWithError( const QString &errorMessage );
+    Q_INVOKABLE void emitErrorMessage( const QVariant &msg );
+    Q_INVOKABLE void emitSVGComputed( const QVariant &svg );
+    Q_INVOKABLE void emitEngineReady( QVariant aOK );
 
-    Q_INVOKABLE void MathJaxDone();
-    Q_INVOKABLE void MathJaxError( const QString &errorMessage );
+Q_SIGNALS:
+    void sigErrorMessage( const QString &msg );
+    void sigSVGRendered( const QByteArray &svg );
+    void sigEngineReady( bool aOK );
 
 public Q_SLOTS:
-    void addJSObject();
-    void ready( bool loadSucceeded );
+    void slotLoadingChanged( const QWebEngineLoadingInfo &loadingInfo );
+    void slotComputeNextInQueue();
 
 private:
+    void renderingFinished();
     QString cleanupCode( QString code ) const;
 
-    std::shared_ptr< QWebEngineView > fView;
+    QWebEngineView *fView{ nullptr };
+    QWebEnginePage *fPage{ nullptr };
+    QWebChannel *fChannel{ nullptr };
 
-    //QWebFrame *frame;
     QString fLastError;
     bool fRunning{ false };
-    bool fIsReady{ false };
-    mutable std::unordered_map< QString, QString > fSVGCache;
+    bool fEngineReady{ false };   // false unless the webengine loads the qrc correctly
+
+    mutable std::unordered_map< QString, QByteArray > fSVGCache;
     mutable std::unordered_map< QString, QString > fCodeCache;
 
     std::list< QString > fQueue;
     QString fCurrentInput;
 
-    void computeNextInBackground();
-    QString computeNow( const QString &code );
+    void computeNow( const QString &code );
 };
 
 #endif   // TEXENGINE_H

@@ -36,7 +36,6 @@ set(qtproject_UIS
 )
 
 set(qtproject_QRC
-    ${CMAKE_CURRENT_BINARY_DIR}/MathFormulaEngine.qrc
 )
 
 SET( project_pub_DEPS
@@ -47,4 +46,3 @@ SET( project_pub_DEPS
     ${project_pub_DEPS}
 )
 
-file(GLOB qtproject_QRC_SOURCES "resources/*")
