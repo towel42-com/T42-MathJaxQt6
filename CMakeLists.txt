@@ -1,15 +1,14 @@
 cmake_minimum_required( VERSION 3.31 )
-project( Qt6MathJax-root )
+project( T42-Qt6MathJax-root )
 
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui WebEngineWidgets )
+SET(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/T42-CMakeUtils/Modules ${CMAKE_MODULE_PATH})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_subdirectory( lib )
-add_subdirectory( example )
+add_subdirectory( src )
+add_subdirectory( examples )
 
-set_target_properties( Qt6MathJax PROPERTIES FOLDER Qt6MathJax )
 set_target_properties( Qt6MathJax_other_files PROPERTIES FOLDER CMakePredefinedTargets/QtAutoProjects )
 set_target_properties( Qt6MathJax_resources_1 PROPERTIES FOLDER CMakePredefinedTargets/QtAutoProjects )
 set_target_properties( Qt6MathJax_resources_2 PROPERTIES FOLDER CMakePredefinedTargets/QtAutoProjects )
-
-set_target_properties( Qt6MathJax-Example_qmlimportscan PROPERTIES FOLDER CMakePredefinedTargets/QtAutoProjects )
 

@@ -1,0 +1,89 @@
+#ifndef MATHFORMULAENGINEPRIVATE_H
+#define MATHFORMULAENGINEPRIVATE_H
+
+#include <QObject>
+#include <QCache>
+#include <memory>
+#include <QWebEnginePage>
+#include <QWebEngineUrlSchemeHandler>
+#include <QByteArray>
+
+#include <unordered_map>
+#include <optional>
+class QWebEngineView;
+class QWebEngineLoadingInfo;
+class QWebEngineNewWindowRequest;
+class QWebChannel;
+
+namespace NTowel42
+{
+    class CQt6MathJax;
+    namespace NPrivate
+    {
+        class CWebEnginePage_WConsoleLog : public QWebEnginePage
+        {
+            Q_OBJECT
+        public:
+            explicit CWebEnginePage_WConsoleLog( QObject *parent = nullptr );
+
+        Q_SIGNALS:
+            void sigErrorMessage( const QString &msg );
+
+        protected:
+            virtual void javaScriptConsoleMessage( JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID ) override;
+        };
+
+        class CQt6MathJax : public QObject
+        {
+            Q_OBJECT
+        public:
+            CQt6MathJax( NTowel42::CQt6MathJax *parent );
+
+        public:
+            ~CQt6MathJax();
+
+            // all generation is async
+            void renderSVG( const QString &code );
+
+            // detect whether a string has already been compiled in the past (i.e., is in cache):
+            std::optional< QByteArray > beenCreated( const QString &code ) const;
+            void clearCache( const QString &code );
+
+            QString errorMessage() const;
+            QWebEngineView *webEngineView() const;
+            bool engineReady() const { return fEngineReady; }
+
+            Q_INVOKABLE void emitErrorMessage( const QVariant &msg );
+            Q_INVOKABLE void emitSVGComputed( const QVariant &svgs );
+            Q_INVOKABLE void emitEngineReady( QVariant aOK );
+
+        Q_SIGNALS:
+            Q_INVOKABLE void sigErrorMessage( const QString &msg );
+            Q_INVOKABLE void sigSVGRendered( const QByteArray &svg );
+            Q_INVOKABLE void sigEngineReady( bool aOK );
+
+        public Q_SLOTS:
+            void slotLoadingChanged( const QWebEngineLoadingInfo &loadingInfo );
+            void slotComputeNextInQueue();
+
+        private:
+            void renderingFinished();
+            QString cleanupCode( QString code ) const;
+
+            QWebEngineView *fView{ nullptr };
+            QWebEnginePage *page();
+
+            QString fLastError;
+            bool fRunning{ false };
+            bool fEngineReady{ false };   // false unless the webengine loads the qrc correctly
+
+            mutable std::unordered_map< QString, QByteArray > fSVGCache;
+            mutable std::unordered_map< QString, QString > fCodeCache;
+
+            std::list< QString > fQueue;
+
+            void computeNow( const QString &code );
+        };
+    }
+}
+#endif   // TEXENGINE_H
