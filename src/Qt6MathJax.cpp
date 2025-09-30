@@ -147,14 +147,44 @@ namespace NTowel42
 
         void CQt6MathJax::renderSVG( const QString &texCode )
         {
+            renderSVG( texCode, {} );
+        }
+
+        void CQt6MathJax::renderSVG( const QString &texCode, const std::function< void( const std::optional< QByteArray > &svg ) > &function )
+        {
             auto cachedValue = beenCreated( texCode );
             if ( cachedValue.has_value() )
             {
+                if ( function )
+                {
+                    function( cachedValue.value() );
+                }
                 emit sigSVGRendered( cachedValue.value() );
                 return;
             }
             fQueue.push_back( texCode );
+
+            bool rendered = false;
+            if ( function )
+            {
+                auto lambda = [ =, &rendered ]( const QByteArray &svg )
+                {
+                    rendered = true;
+                    if ( function )
+                        function( svg );
+                };
+                connect( this, &CQt6MathJax::sigSVGRendered, lambda );
+            }
             QTimer::singleShot( 20, this, &CQt6MathJax::slotComputeNextInQueue );
+
+            if ( function )
+            {
+                QEventLoop loop;
+                QObject::connect( this, &CQt6MathJax::sigRenderingFinished, &loop, &QEventLoop::quit );
+                loop.exec();
+                if ( !rendered )
+                    function( {} );
+            }
         }
 
         void CQt6MathJax::slotComputeNextInQueue()
@@ -178,9 +208,15 @@ namespace NTowel42
         void CQt6MathJax::renderingFinished()
         {
             fRunning = false;
+            emit sigRenderingFinished();
             if ( !fQueue.empty() )
                 fQueue.pop_front();
             QTimer::singleShot( 20, this, &CQt6MathJax::slotComputeNextInQueue );
+        }
+
+        void CQt6MathJax::emitRenderingFinished()
+        {
+            emit sigRenderingFinished();
         }
 
         void CQt6MathJax::emitErrorMessage( const QVariant &msg )
@@ -278,11 +314,13 @@ namespace NTowel42
             if ( svg.has_value() )
             {
                 qCInfo( Qt6MathJaxDebug ).noquote().nospace() << "SVG:" << svg.value();
-                emit sigSVGRendered( svg.value() );
                 fSVGCache[ fQueue.front() ] = svg.value();
+                emit sigSVGRendered( svg.value() );
             }
             else
+            {
                 emitErrorMessage( "Problems rendering equation" );
+            }
             renderingFinished();
         };
 
@@ -353,6 +391,11 @@ namespace NTowel42
         return fImpl->renderSVG( texCode );
     }
 
+    void CQt6MathJax::renderSVG( const QString &texCode, const std::function< void( const std::optional< QByteArray > &svg ) > &function )
+    {
+        return fImpl->renderSVG( texCode, function );
+    }
+
     void CQt6MathJax::slotRenderSVG( const QString &texCode )
     {
         renderSVG( texCode );
@@ -396,5 +439,6 @@ namespace NTowel42
     void CQt6MathJax::enableDebugConsole( int port )
     {
         qputenv( "QTWEBENGINE_REMOTE_DEBUGGING", QString::number( port ).toUtf8() );
+        QDesktopServices::openUrl( QUrl( "http://127.0.0.1:12345" ) );
     }
 }

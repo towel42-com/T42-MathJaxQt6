@@ -4,13 +4,12 @@
 
 #include <QWebEngineView>
 #include <QWebEnginePage>
-#include <QDesktopServices>
 #include <QSvgRenderer>
 
 #include <QMessageBox>
 #include <QTimer>
 
-#define MINSIZE 100
+#include <algorithm>
 
 CMainWindow::CMainWindow( QWidget *parent ) :
     QMainWindow( parent ),
@@ -20,15 +19,23 @@ CMainWindow::CMainWindow( QWidget *parent ) :
     fEngine = new NTowel42::CQt6MathJax;
 
     fImpl->setupUi( this );
-    fImpl->svgWidget->setMinimumSize( MINSIZE, MINSIZE );
     fImpl->lineEdit->setText( R"(x = {-b \pm \sqrt{b^2-4ac} \over 2a})" );
     fImpl->webEngineViewLayout->addWidget( fEngine->webEngineViewWidget() );
-    connect( fImpl->lineEdit, &QLineEdit::returnPressed, fImpl->render, &QPushButton::animateClick );
+    connect( fImpl->lineEdit, &QLineEdit::returnPressed, fImpl->asyncRender, &QPushButton::animateClick );
     connect( fImpl->lineEdit, &QLineEdit::textChanged, this, &CMainWindow::slotEnableInput );
-    connect( fImpl->render, &QPushButton::clicked, [ = ]() { fEngine->renderSVG( fImpl->lineEdit->text() ); } );
+    connect(
+        fImpl->asyncRender, &QPushButton::clicked,
+        [ = ]()
+        {
+            clear();
+            QApplication::setOverrideCursor( Qt::WaitCursor );
+            fEngine->renderSVG( fImpl->lineEdit->text() );
+        } );
+    connect( fImpl->syncRender, &QPushButton::clicked, this, &CMainWindow::slotSyncRender );
 
     fImpl->lineEdit->setEnabled( false );
-    fImpl->render->setEnabled( false );
+    fImpl->asyncRender->setEnabled( false );
+    fImpl->syncRender->setEnabled( false );
 
     connect( fEngine, &NTowel42::CQt6MathJax::sigEngineReady, this, &CMainWindow::slotEngineReady );
     connect( fEngine, &NTowel42::CQt6MathJax::sigErrorMessage, this, &CMainWindow::slotErrorMessage );
@@ -41,13 +48,6 @@ CMainWindow::~CMainWindow()
 
 void CMainWindow::slotEngineReady( bool /*aOK*/ )
 {
-    static bool first = true;
-    if ( first )
-    {
-        QDesktopServices::openUrl( QUrl( "http://127.0.0.1:12345" ) );
-        first = false;
-    }
-
     slotEnableInput();
 }
 
@@ -60,7 +60,14 @@ void CMainWindow::slotEnableInput()
 {
     bool enabled = fEngine->engineReady() && !fImpl->lineEdit->text().trimmed().isEmpty();
     fImpl->lineEdit->setEnabled( enabled );
-    fImpl->render->setEnabled( enabled );
+    fImpl->syncRender->setEnabled( enabled );
+    fImpl->asyncRender->setEnabled( enabled );
+}
+
+void CMainWindow::clear()
+{
+    fImpl->plainTextEdit->clear();
+    fImpl->svgWidget->load( QString() );
 }
 
 void CMainWindow::slotSVGRendered( const QByteArray &svg )
@@ -68,17 +75,32 @@ void CMainWindow::slotSVGRendered( const QByteArray &svg )
     fImpl->plainTextEdit->setPlainText( svg );
 
     fImpl->svgWidget->load( svg );
-    if ( fImpl->svgWidget->renderer()->isValid() )
-    {
-        auto sz = fImpl->svgWidget->sizeHint();
-        sz.setWidth( sz.width() * MINSIZE / sz.height() );
-        sz.setHeight( MINSIZE * 1.2 );
-        fImpl->svgWidget->setMinimumSize( sz );
-        fImpl->svgWidget->setMaximumSize( sz );
-    }
-    else
+    if ( !fImpl->svgWidget->renderer()->isValid() )
     {
         slotErrorMessage( tr( "Could not load the SVG file" ) );
         fEngine->clearCache( fImpl->lineEdit->text() );
     }
+    QApplication::restoreOverrideCursor();
+}
+
+void CMainWindow::slotSyncRender()
+{
+    clear();
+    QApplication::setOverrideCursor( Qt::WaitCursor );
+    fEngine->blockSignals( true );
+    QByteArray svgCode;
+    fEngine->renderSVG(
+        fImpl->lineEdit->text(),   //
+        [ = ]( const std::optional< QByteArray > &svg )   //
+        {
+            fEngine->blockSignals( false );
+
+            if ( !svg.has_value() )
+            {
+                QMessageBox::critical( this, tr( "Error in MathJax Engine" ), fEngine->errorMessage() );
+                return;
+            }
+
+            slotSVGRendered( svg.value() );
+        } );
 }

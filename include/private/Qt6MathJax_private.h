@@ -42,8 +42,8 @@ namespace NTowel42
         public:
             ~CQt6MathJax();
 
-            // all generation is async
             void renderSVG( const QString &code );
+            void renderSVG( const QString &texCode, const std::function< void( const std::optional< QByteArray > &svg ) > &function );
 
             // detect whether a string has already been compiled in the past (i.e., is in cache):
             std::optional< QByteArray > beenCreated( const QString &code ) const;
@@ -56,11 +56,13 @@ namespace NTowel42
             Q_INVOKABLE void emitErrorMessage( const QVariant &msg );
             Q_INVOKABLE void emitSVGComputed( const QVariant &svgs );
             Q_INVOKABLE void emitEngineReady( QVariant aOK );
+            Q_INVOKABLE void emitRenderingFinished();
 
         Q_SIGNALS:
             Q_INVOKABLE void sigErrorMessage( const QString &msg );
             Q_INVOKABLE void sigSVGRendered( const QByteArray &svg );
             Q_INVOKABLE void sigEngineReady( bool aOK );
+            Q_INVOKABLE void sigRenderingFinished();
 
         public Q_SLOTS:
             void slotLoadingChanged( const QWebEngineLoadingInfo &loadingInfo );

@@ -30,8 +30,10 @@ private slots:
     void slotSVGRendered( const QByteArray &svg );
     void slotErrorMessage( const QString &msg );
     void slotEnableInput();
+    void slotSyncRender();
 
 private:
+    void clear();
     std::unique_ptr< Ui::CMainWindow > fImpl{};
     NTowel42::CQt6MathJax *fEngine{ nullptr };
 };

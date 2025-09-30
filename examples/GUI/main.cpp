@@ -5,7 +5,6 @@
 
 #include <QLoggingCategory>
 #include <QDirIterator>
-#include <QWebEngineView>
 
 void dumpQRC()
 {
@@ -27,7 +26,7 @@ int main( int argc, char *argv[] )
     Q_INIT_RESOURCE( Qt6MathJax );
 
     QApplication a( argc, argv );
-    QLoggingCategory::setFilterRules( ( QStringList() << "*=false" << "js=true" << "Qt6MathJax=true" << "Qt6MathJax.Console=true" << "Qt6MathJax.QRC=true" ).join( "\n" ) );
+    QLoggingCategory::setFilterRules( ( QStringList() << "*=false" << "js=true" << "Qt6MathJax=true" << "Qt6MathJax.Console=true"  ).join( "\n" ) );
 
     dumpQRC();
 
