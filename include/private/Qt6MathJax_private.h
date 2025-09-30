@@ -54,7 +54,7 @@ namespace NTowel42
             bool engineReady() const { return fEngineReady; }
 
             Q_INVOKABLE void emitErrorMessage( const QVariant &msg );
-            Q_INVOKABLE void emitSVGComputed( const QVariant &svgs );
+            Q_INVOKABLE void emitSVGRendered( const QVariant &svgs );
             Q_INVOKABLE void emitEngineReady( QVariant aOK );
             Q_INVOKABLE void emitRenderingFinished();
 
@@ -82,7 +82,12 @@ namespace NTowel42
             mutable std::unordered_map< QString, QByteArray > fSVGCache;
             mutable std::unordered_map< QString, QString > fCodeCache;
 
-            std::list< QString > fQueue;
+            struct SQueuedRequests
+            {
+                QString fOrig;
+                QString fClean;
+            };
+            std::list< SQueuedRequests > fQueue;
 
             void computeNow( const QString &code );
         };

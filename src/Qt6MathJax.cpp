@@ -1,29 +1,24 @@
 ﻿#include "include/Qt6MathJax.h"
 #include "include/private/Qt6MathJax_private.h"
 
-#include <QWebEngineView>
-#include <QWebEnginePage>
-#include <QWebEngineFrame>
-#include <QWebEngineLoadingInfo>
 #include <QDesktopServices>
-#include <QWebEngineUrlRequestJob>
-
-#include <QCoreApplication>
-#include <QFile>
-#include <QUrl>
-#include <QWebChannel>
-#include <QTimer>
+#include <QEventLoop>
 #include <QMetaEnum>
 #include <QRegularExpression>
+#include <QTimer>
+#include <QUrl>
+#include <QWebChannel>
+#include <QWebEngineFrame>
+#include <QWebEngineLoadingInfo>
+#include <QWebEnginePage>
+#include <QWebEngineView>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
-#include <QWebEngineProfile>
-#include <QWebEngineUrlScheme>
 
-Q_LOGGING_CATEGORY( Qt6MathJax, "Qt6MathJax", QtMsgType::QtInfoMsg )
-Q_LOGGING_CATEGORY( Qt6MathJaxDebug, "Qt6MathJax.Debug", QtMsgType::QtDebugMsg )
-Q_LOGGING_CATEGORY( Qt6MathJaxConsole, "Qt6MathJax.Console", QtMsgType::QtInfoMsg );
-Q_LOGGING_CATEGORY( Qt6MathJaxQRC, "Qt6MathJax.QRC", QtMsgType::QtDebugMsg );
+Q_LOGGING_CATEGORY( T42Qt6MathJax, "Towel42.Qt6MathJax", QtMsgType::QtInfoMsg )
+Q_LOGGING_CATEGORY( T42Qt6MathJaxDebug, "Towel42.Qt6MathJax.Debug", QtMsgType::QtDebugMsg )
+Q_LOGGING_CATEGORY( T42Qt6MathJaxConsole, "Towel42.Qt6MathJax.Console", QtMsgType::QtInfoMsg );
+Q_LOGGING_CATEGORY( T42Qt6MathJaxQRC, "Towel42.Qt6MathJax.QRC", QtMsgType::QtDebugMsg );
 
 namespace NTowel42
 {
@@ -39,7 +34,7 @@ namespace NTowel42
             auto typeString = QMetaEnum::fromType< JavaScriptConsoleMessageLevel >().valueToKey( level );
             auto msg = tr( "%1: %2:%3 - %4" ).arg( typeString ).arg( sourceID ).arg( lineNumber ).arg( message );
 
-            qCInfo( Qt6MathJaxConsole ).nospace().noquote() << msg;
+            qCInfo( T42Qt6MathJaxConsole ).nospace().noquote() << msg;
             if ( level == JavaScriptConsoleMessageLevel::ErrorMessageLevel )
             {
                 emit sigErrorMessage( msg );
@@ -60,32 +55,32 @@ namespace NTowel42
             channel->registerObject( QStringLiteral( "qt6MathJax" ), this );
             page->setWebChannel( channel );
 
-            connect( fView, &QWebEngineView::iconChanged, [ = ]( const QIcon &icon ) { qCInfo( Qt6MathJax ) << "QWebEngineView::iconChanged" << icon; } );
-            connect( fView, &QWebEngineView::iconUrlChanged, [ = ]( const QUrl &url ) { qCInfo( Qt6MathJax ) << "QWebEngineView::iconUrlChanged: " << url; } );
-            connect( fView, &QWebEngineView::loadFinished, [ = ]( bool status ) { qCInfo( Qt6MathJax ) << "QWebEngineView::Load Finished: " << status; } );
-            connect( fView, &QWebEngineView::loadProgress, [ = ]( int progress ) { qCInfo( Qt6MathJax ) << "QWebEngineView::Load Progress: " << progress; } );
-            connect( fView, &QWebEngineView::loadStarted, [ = ]() { qCInfo( Qt6MathJax ) << "QWebEngineView::Load Started: "; } );
-            connect( fView, &QWebEngineView::pdfPrintingFinished, [ = ]( const QString &filePath, bool success ) { qCInfo( Qt6MathJax ) << "QWebEngineView::PDF Print Finished: " << filePath << success; } );
-            connect( fView, &QWebEngineView::printFinished, [ = ]( bool success ) { qCInfo( Qt6MathJax ) << "QWebEngineView::Print Finished: " << success; } );
-            connect( fView, &QWebEngineView::printRequested, [ = ]() { qCInfo( Qt6MathJax ) << "QWebEngineView::Print Requested: "; } );
-            connect( fView, &QWebEngineView::printRequestedByFrame, [ = ]( QWebEngineFrame frame ) { qCInfo( Qt6MathJax ) << "QWebEngineView::Print Requested by Frame: " << frame.name(); } );
-            connect( fView, &QWebEngineView::renderProcessTerminated, [ = ]( QWebEnginePage::RenderProcessTerminationStatus terminationStatus, int exitCode ) { qCInfo( Qt6MathJax ) << "QWebEngineView::renderProcessTerminated: " << terminationStatus << exitCode; } );
-            connect( fView, &QWebEngineView::selectionChanged, [ = ]() { qCInfo( Qt6MathJax ) << "QWebEngineView::selectionChanged: "; } );
-            connect( fView, &QWebEngineView::titleChanged, [ = ]( const QString &title ) { qCInfo( Qt6MathJax ) << "QWebEngineView::titleChanged: " << title; } );
-            connect( fView, &QWebEngineView::urlChanged, [ = ]( const QUrl &url ) { qCInfo( Qt6MathJax ) << "QWebEngineView::url changed: " << url; } );
+            connect( fView, &QWebEngineView::iconChanged, [ = ]( const QIcon &icon ) { qCInfo( T42Qt6MathJaxDebug ) << "iconChanged" << icon; } );
+            connect( fView, &QWebEngineView::iconUrlChanged, [ = ]( const QUrl &url ) { qCInfo( T42Qt6MathJaxDebug ) << "iconUrlChanged: " << url; } );
+            connect( fView, &QWebEngineView::loadFinished, [ = ]( bool status ) { qCInfo( T42Qt6MathJax ) << "Load Finished: " << ( status ? "Successful" : "Failed" ); } );
+            connect( fView, &QWebEngineView::loadProgress, [ = ]( int progress ) { qCInfo( T42Qt6MathJax ) << "Load Progress: " << progress; } );
+            connect( fView, &QWebEngineView::loadStarted, [ = ]() { qCInfo( T42Qt6MathJax ) << "Load Started: "; } );
+            connect( fView, &QWebEngineView::pdfPrintingFinished, [ = ]( const QString &filePath, bool success ) { qCInfo( T42Qt6MathJaxDebug ) << "PDF Print Finished: " << filePath << success; } );
+            connect( fView, &QWebEngineView::printFinished, [ = ]( bool success ) { qCInfo( T42Qt6MathJaxDebug ) << "Print Finished: " << success; } );
+            connect( fView, &QWebEngineView::printRequested, [ = ]() { qCInfo( T42Qt6MathJaxDebug ) << "Print Requested: "; } );
+            connect( fView, &QWebEngineView::printRequestedByFrame, [ = ]( QWebEngineFrame frame ) { qCInfo( T42Qt6MathJaxDebug ) << "Print Requested by Frame: " << frame.name(); } );
+            connect( fView, &QWebEngineView::renderProcessTerminated, [ = ]( QWebEnginePage::RenderProcessTerminationStatus terminationStatus, int exitCode ) { qCInfo( T42Qt6MathJaxDebug ) << "renderProcessTerminated: " << terminationStatus << exitCode; } );
+            connect( fView, &QWebEngineView::selectionChanged, [ = ]() { qCInfo( T42Qt6MathJaxDebug ) << "selectionChanged: "; } );
+            connect( fView, &QWebEngineView::titleChanged, [ = ]( const QString &title ) { qCInfo( T42Qt6MathJaxDebug ) << "titleChanged: " << title; } );
+            connect( fView, &QWebEngineView::urlChanged, [ = ]( const QUrl &url ) { qCInfo( T42Qt6MathJaxDebug ) << "url changed: " << url; } );
 
             connect(
                 page, &QWebEnginePage::loadingChanged,
                 [ = ]( const QWebEngineLoadingInfo &loadingInfo )   //
                 {
-                    qCInfo( Qt6MathJax ).noquote().nospace() << "QWebEnginePage: Loading info:\n";
-                    qCInfo( Qt6MathJax ).noquote().nospace() << "          errorCode: " << loadingInfo.errorCode();
-                    qCInfo( Qt6MathJax ).noquote().nospace() << "        errorString: \"" << loadingInfo.errorString() << "\"";
-                    //qCInfo( Qt6MathJax ).noquote().nospace() << "         isDownload: " << loadingInfo.isDownload();
-                    qCInfo( Qt6MathJax ).noquote().nospace() << "        isErrorPage: " << loadingInfo.isErrorPage();
-                    qCInfo( Qt6MathJax ).noquote().nospace() << "    responseHeaders: " << loadingInfo.responseHeaders();
-                    qCInfo( Qt6MathJax ).noquote().nospace() << "             status: " << loadingInfo.status();
-                    qCInfo( Qt6MathJax ).noquote().nospace() << "                url: " << loadingInfo.url();
+                    qCInfo( T42Qt6MathJaxDebug ).noquote().nospace() << "QWebEnginePage: Loading info:\n";
+                    qCInfo( T42Qt6MathJaxDebug ).noquote().nospace() << "          errorCode: " << loadingInfo.errorCode();
+                    qCInfo( T42Qt6MathJaxDebug ).noquote().nospace() << "        errorString: \"" << loadingInfo.errorString() << "\"";
+                    //qCInfo( T42Qt6MathJaxDebug ).noquote().nospace() << "         isDownload: " << loadingInfo.isDownload();
+                    qCInfo( T42Qt6MathJaxDebug ).noquote().nospace() << "        isErrorPage: " << loadingInfo.isErrorPage();
+                    qCInfo( T42Qt6MathJaxDebug ).noquote().nospace() << "    responseHeaders: " << loadingInfo.responseHeaders();
+                    qCInfo( T42Qt6MathJaxDebug ).noquote().nospace() << "             status: " << loadingInfo.status();
+                    qCInfo( T42Qt6MathJaxDebug ).noquote().nospace() << "                url: " << loadingInfo.url();
                 } );
 
             connect( page, &QWebEnginePage::loadingChanged, this, &CQt6MathJax::slotLoadingChanged );
@@ -114,6 +109,8 @@ namespace NTowel42
         {
             QString cleanedCode = cleanupCode( texCode );
             auto pos = fSVGCache.find( cleanedCode );
+            if ( pos == fSVGCache.end() )
+                pos = fSVGCache.find( texCode );
             if ( pos == fSVGCache.end() )
                 return {};
             return ( *pos ).second;
@@ -150,55 +147,64 @@ namespace NTowel42
             renderSVG( texCode, {} );
         }
 
-        void CQt6MathJax::renderSVG( const QString &texCode, const std::function< void( const std::optional< QByteArray > &svg ) > &function )
+        void CQt6MathJax::renderSVG( const QString &texCode, const std::function< void( const std::optional< QByteArray > &svg ) > &postRenderFunction )
         {
             auto cachedValue = beenCreated( texCode );
             if ( cachedValue.has_value() )
             {
-                if ( function )
-                {
-                    function( cachedValue.value() );
-                }
                 emit sigSVGRendered( cachedValue.value() );
+                if ( postRenderFunction )
+                {
+                    postRenderFunction( cachedValue.value() );
+                    parent()->blockSignals( false );
+                }
                 return;
             }
-            fQueue.push_back( texCode );
+            fQueue.push_back( { texCode, cleanupCode( texCode ) } );
 
             bool rendered = false;
-            if ( function )
+            if ( postRenderFunction )
             {
                 auto lambda = [ =, &rendered ]( const QByteArray &svg )
                 {
                     rendered = true;
-                    if ( function )
-                        function( svg );
+                    postRenderFunction( svg );
+                    parent()->blockSignals( false );
                 };
                 connect( this, &CQt6MathJax::sigSVGRendered, lambda );
             }
             QTimer::singleShot( 20, this, &CQt6MathJax::slotComputeNextInQueue );
 
-            if ( function )
+            if ( postRenderFunction )
             {
                 QEventLoop loop;
                 QObject::connect( this, &CQt6MathJax::sigRenderingFinished, &loop, &QEventLoop::quit );
                 loop.exec();
                 if ( !rendered )
-                    function( {} );
+                {
+                    postRenderFunction( {} );
+                    parent()->blockSignals( false );
+                }
             }
         }
 
         void CQt6MathJax::slotComputeNextInQueue()
         {
-            if ( !engineReady() || fQueue.empty() || fRunning )
+            if ( fQueue.empty() )
+                return;
+
+            if ( !engineReady() && !errorMessage().isEmpty() )
+                return;
+
+            if ( fRunning )
             {
                 QTimer::singleShot( 20, this, &CQt6MathJax::slotComputeNextInQueue );
                 return;
             }
 
-            auto cleanedCode = cleanupCode( fQueue.front() );
-
             fRunning = true;
             fLastError = QString();
+            auto cleanedCode = fQueue.front().fClean;
 
             page()->runJavaScript( QString( "Render.run('%1');" ).arg( cleanedCode ) );
 
@@ -303,9 +309,9 @@ namespace NTowel42
             return retVal;
         }
 
-        void CQt6MathJax::emitSVGComputed( const QVariant &value )
+        void CQt6MathJax::emitSVGRendered( const QVariant &value )
         {
-            qCInfo( Qt6MathJaxDebug ).noquote().nospace() << "Variant:" << value;
+            qCInfo( T42Qt6MathJaxDebug ).noquote().nospace() << "Variant:" << value;
 
             // orig has html improperly inside quotes
             auto orig = value.toString();
@@ -313,8 +319,9 @@ namespace NTowel42
             auto svg = validateXML( origEOL.toUtf8() );
             if ( svg.has_value() )
             {
-                qCInfo( Qt6MathJaxDebug ).noquote().nospace() << "SVG:" << svg.value();
-                fSVGCache[ fQueue.front() ] = svg.value();
+                qCInfo( T42Qt6MathJaxDebug ).noquote().nospace() << "SVG:" << svg.value();
+                fSVGCache[ fQueue.front().fOrig ] = svg.value();
+                fSVGCache[ fQueue.front().fClean ] = svg.value();
                 emit sigSVGRendered( svg.value() );
             }
             else
@@ -377,6 +384,7 @@ namespace NTowel42
     CQt6MathJax::CQt6MathJax( QObject *parent ) :
         QObject( parent )
     {
+        initResources();
         fImpl = new NPrivate::CQt6MathJax( this );
         connect( fImpl, &NPrivate::CQt6MathJax::sigEngineReady, this, &CQt6MathJax::sigEngineReady );
         connect( fImpl, &NPrivate::CQt6MathJax::sigErrorMessage, this, &CQt6MathJax::sigErrorMessage );
@@ -388,12 +396,13 @@ namespace NTowel42
     }
     void CQt6MathJax::renderSVG( const QString &texCode )
     {
-        return fImpl->renderSVG( texCode );
+        fImpl->renderSVG( texCode );
     }
 
     void CQt6MathJax::renderSVG( const QString &texCode, const std::function< void( const std::optional< QByteArray > &svg ) > &function )
     {
-        return fImpl->renderSVG( texCode, function );
+        blockSignals( true );
+        fImpl->renderSVG( texCode, function );
     }
 
     void CQt6MathJax::slotRenderSVG( const QString &texCode )
@@ -440,5 +449,10 @@ namespace NTowel42
     {
         qputenv( "QTWEBENGINE_REMOTE_DEBUGGING", QString::number( port ).toUtf8() );
         QDesktopServices::openUrl( QUrl( "http://127.0.0.1:12345" ) );
+    }
+
+    void CQt6MathJax::initResources()
+    {
+        Q_INIT_RESOURCE( Qt6MathJax );
     }
 }

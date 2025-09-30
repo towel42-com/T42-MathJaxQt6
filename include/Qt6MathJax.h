@@ -6,10 +6,10 @@
 
 class QWebEngineView;
 
-Q_DECLARE_LOGGING_CATEGORY( Qt6MathJax )
-Q_DECLARE_LOGGING_CATEGORY( Qt6MathJaxConsole )
-Q_DECLARE_LOGGING_CATEGORY( Qt6MathJaxQRC )
-Q_DECLARE_LOGGING_CATEGORY( Qt6MathJaxDebug )
+Q_DECLARE_LOGGING_CATEGORY( T42Qt6MathJax )
+Q_DECLARE_LOGGING_CATEGORY( T42Qt6MathJaxConsole )
+Q_DECLARE_LOGGING_CATEGORY( T42Qt6MathJaxQRC )
+Q_DECLARE_LOGGING_CATEGORY( T42Qt6MathJaxDebug )
 
 namespace NTowel42
 {
@@ -43,7 +43,7 @@ namespace NTowel42
         QWidget *webEngineViewWidget() const;
 
         static void enableDebugConsole( int port );
-
+        static void initResources();
     public Q_SLOTS:
         void slotRenderSVG( const QString &texCode );
     Q_SIGNALS:

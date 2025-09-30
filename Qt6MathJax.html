@@ -103,7 +103,7 @@
                     if (qt6MathJax != null) {
                         for (const child of node.children) {
                             if (child.tagName == "svg") {
-                                qt6MathJax.emitSVGComputed(child.outerHTML);
+                                qt6MathJax.emitSVGRendered(child.outerHTML);
                                 //console.log(child.outerHTML);
                             }
                         }

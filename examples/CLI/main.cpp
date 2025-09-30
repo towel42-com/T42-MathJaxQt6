@@ -12,7 +12,7 @@ int main( int argc, char *argv[] )
     QCoreApplication::setApplicationName( "Qt6MathJax-CLIExample" );
     QCoreApplication::setApplicationVersion( "1.0" );
 
-    QLoggingCategory::setFilterRules( ( QStringList() << "Qt6MathJax.*=false" ).join( "\n" ) );
+    QLoggingCategory::setFilterRules( ( QStringList() << "Towel42.Qt6MathJax.*=false" ).join( "\n" ) );
 
     QCommandLineParser parser;
     parser.setApplicationDescription( "Qt6MathJax-CLIExample - A simple tool to convert TeX strings into SVG." );
