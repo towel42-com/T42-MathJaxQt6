@@ -18,14 +18,16 @@ class CMainWindow : public QMainWindow
 
 public:
     explicit CMainWindow( QWidget *parent = 0 );
+
+public:
     ~CMainWindow();
 
 private slots:
-    void generate();
+    void slotRender();
     void slotEngineReady( bool aOK );
     void slotSVGRendered( const QByteArray &svg );
     void slotErrorMessage( const QString &msg );
-
+    void slotEnableInput();
 
 private:
     std::unique_ptr< Ui::CMainWindow > fImpl{};

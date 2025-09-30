@@ -5,6 +5,7 @@
 
 #include <QLoggingCategory>
 #include <QDirIterator>
+#include <QWebEngineView>
 
 void dumpQRC()
 {

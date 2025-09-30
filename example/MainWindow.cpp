@@ -2,15 +2,16 @@
 #include "ui_MainWindow.h"
 #include "lib/Qt6MathJax.h"
 
-#include <QSvgRenderer>
+#include <QWebEngineFrame>
+#include <QWebEngineView>
+#include <QWebEnginePage>
 
-#include <QXmlStreamReader>
-#include <QXmlStreamWriter>
+#include <QSvgRenderer>
 
 #include <QMessageBox>
 #include <QTimer>
 
-#define HT 100
+#define MINSIZE 100
 
 CMainWindow::CMainWindow( QWidget *parent ) :
     QMainWindow( parent ),
@@ -18,40 +19,28 @@ CMainWindow::CMainWindow( QWidget *parent ) :
     fEngine( new CQt6MathJax )
 {
     fImpl->setupUi( this );
-    fImpl->svgWidget->setMinimumSize( HT, HT );
-    fImpl->lineEdit->setText( R"(x = -b \pm \sqrt{b^2-4ac} \over 2a)" );
+    fImpl->svgWidget->setMinimumSize( MINSIZE, MINSIZE );
+    fImpl->lineEdit->setText( R"(x = {-b \pm \sqrt{b^2-4ac} \over 2a})" );
+    fImpl->webEngineViewLayout->addWidget( fEngine->webEngineViewWidget() );
     connect( fImpl->lineEdit, &QLineEdit::returnPressed, fImpl->render, &QPushButton::animateClick );
-    connect(
-        fImpl->lineEdit, &QLineEdit::textChanged,   //
-        [ this ]()   //
-        {   //
-            fImpl->lineEdit->setEnabled( fEngine->engineReady() && !fImpl->lineEdit->text().trimmed().isEmpty() );
-        }   //
-    );
-    connect( fImpl->render, &QPushButton::clicked, this, &CMainWindow::generate );
+    connect( fImpl->lineEdit, &QLineEdit::textChanged, this, &CMainWindow::slotEnableInput );
+    connect( fImpl->render, &QPushButton::clicked, this, &CMainWindow::slotRender );
 
     fImpl->lineEdit->setEnabled( false );
+    fImpl->render->setEnabled( false );
 
     connect( fEngine, &CQt6MathJax::sigEngineReady, this, &CMainWindow::slotEngineReady );
     connect( fEngine, &CQt6MathJax::sigErrorMessage, this, &CMainWindow::slotErrorMessage );
     connect( fEngine, &CQt6MathJax::sigSVGRendered, this, &CMainWindow::slotSVGRendered );
-
-    QTimer::singleShot(
-        0,
-        [ = ]()
-        {
-            QString url = "qrc:/Qt6MathJax/Qt6MathJax.html";
-            fImpl->webEngineView->load( url );
-        } );
 }
 
 CMainWindow::~CMainWindow()
 {
 }
 
-void CMainWindow::slotEngineReady( bool aOK )
+void CMainWindow::slotEngineReady( bool /*aOK*/ )
 {
-    fImpl->lineEdit->setEnabled( aOK );
+    slotEnableInput();
 }
 
 void CMainWindow::slotErrorMessage( const QString &msg )
@@ -59,47 +48,34 @@ void CMainWindow::slotErrorMessage( const QString &msg )
     QMessageBox::critical( this, tr( "Error in MathJax Engine" ), msg );
 }
 
+void CMainWindow::slotEnableInput()
+{
+    bool enabled = fEngine->engineReady() && !fImpl->lineEdit->text().trimmed().isEmpty();
+    fImpl->lineEdit->setEnabled( enabled );
+    fImpl->render->setEnabled( enabled );
+}
+
 void CMainWindow::slotSVGRendered( const QByteArray &svg )
 {
-    QString xmlOut;
-    QXmlStreamReader reader( svg );
-    QXmlStreamWriter writer( &xmlOut );
-    writer.setAutoFormatting( true );
-    bool invalidElementFound = false;
-    while ( !reader.atEnd() )
-    {
-        reader.readNext();
-        if ( reader.tokenType() != QXmlStreamReader::TokenType::Invalid )
-        {
-            qCInfo( Qt6MathJaxConsole ) << reader.tokenType();
-            writer.writeCurrentToken( reader );
-        }
-        else
-        {
-            invalidElementFound = true;
-        }
-    }
-
-    if ( invalidElementFound )
-        slotErrorMessage( tr( "Invalid element found in SVG" ) );
-    fImpl->plainTextEdit->setPlainText( xmlOut );
+    fImpl->plainTextEdit->setPlainText( svg );
 
     fImpl->svgWidget->load( svg );
     if ( fImpl->svgWidget->renderer()->isValid() )
     {
         auto sz = fImpl->svgWidget->sizeHint();
-        sz.setWidth( sz.width() * HT / sz.height() );
-        sz.setHeight( HT * 1.2 );
+        sz.setWidth( sz.width() * MINSIZE / sz.height() );
+        sz.setHeight( MINSIZE * 1.2 );
         fImpl->svgWidget->setMinimumSize( sz );
         fImpl->svgWidget->setMaximumSize( sz );
     }
     else
     {
         slotErrorMessage( tr( "Could not load the SVG file" ) );
+        fEngine->clearCache( fImpl->lineEdit->text() );
     }
 }
 
-void CMainWindow::generate()
+void CMainWindow::slotRender()
 {
     fEngine->renderSVG( fImpl->lineEdit->text() );
 }
