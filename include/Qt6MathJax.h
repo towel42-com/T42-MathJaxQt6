@@ -28,7 +28,7 @@ namespace NTowel42
         void renderSVG( const QString &texCode );
 
         // synchronous computation of the svg
-        void renderSVG( const QString &texCode, const std::function< void( const std::optional< QByteArray > &svg ) > &function );
+        void renderSVG( const QString &texCode, const std::function< void( const std::optional< QByteArray > &svg ) > &function, const std::function< void( const QString &msg ) > &onErrorMessage = {} );
 
         // detect whether a string has already been compiled in the past (i.e., is in cache):
         bool beenCreated( const QString &texCode ) const;

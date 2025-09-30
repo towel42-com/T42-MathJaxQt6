@@ -43,7 +43,7 @@ namespace NTowel42
             ~CQt6MathJax();
 
             void renderSVG( const QString &code );
-            void renderSVG( const QString &texCode, const std::function< void( const std::optional< QByteArray > &svg ) > &function );
+            void renderSVG( const QString &texCode, const std::function< void( const std::optional< QByteArray > &svg ) > &function, const std::function< void( const QString &msg ) > &onErrorMessage );
 
             // detect whether a string has already been compiled in the past (i.e., is in cache):
             std::optional< QByteArray > beenCreated( const QString &code ) const;
@@ -51,11 +51,11 @@ namespace NTowel42
 
             QString errorMessage() const;
             QWebEngineView *webEngineView() const;
-            bool engineReady() const { return fEngineReady; }
+            bool setEngineReady() const { return fEngineReady; }
 
-            Q_INVOKABLE void emitErrorMessage( const QVariant &msg );
-            Q_INVOKABLE void emitSVGRendered( const QVariant &svgs );
-            Q_INVOKABLE void emitRenderingFinished();
+            Q_INVOKABLE void errorMessage( const QVariant &msg );
+            Q_INVOKABLE void svgRendered( const QVariant &svgs );
+            Q_INVOKABLE void renderingFinished();
 
         Q_SIGNALS:
             Q_INVOKABLE void sigErrorMessage( const QString &msg );
@@ -68,8 +68,9 @@ namespace NTowel42
             void slotComputeNextInQueue();
 
         private:
-            void engineReady( bool aOK );
-            void renderingFinished();
+            void setupDebugTracing();
+            void setEngineReady( bool aOK );
+
             QString cleanupCode( QString code ) const;
 
             QWebEngineView *fView{ nullptr };
