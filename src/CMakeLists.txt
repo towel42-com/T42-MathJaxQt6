@@ -4,7 +4,7 @@ project( Qt6MathJax )
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui WebEngineWidgets )
 
 include( include.cmake )
-include( ${CMAKE_SOURCE_DIR}/T42-CMakeUtils/QtProject.cmake )
+include( ${CMAKE_CURRENT_SOURCE_DIR}/../T42-CMakeUtils/QtProject.cmake )
 find_package(Deploy REQUIRED)
 
 add_library(
@@ -41,5 +41,5 @@ target_link_libraries( ${PROJECT_NAME}
 )
 
 
-set_target_properties( ${PROJECT_NAME} PROPERTIES FOLDER Qt6MathJax )
+set_target_properties( ${PROJECT_NAME} PROPERTIES FOLDER T42-Qt6MathJax-root )
 

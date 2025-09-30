@@ -25,8 +25,8 @@ set(qtproject_SRCS
 )
 
 set(qtproject_H
-    Qt6MathJax.h
-    private/Qt6MathJax_private.h
+    ../include/Qt6MathJax.h
+    ../include/private/Qt6MathJax_private.h
 )
 
 set(project_H
@@ -41,7 +41,6 @@ set(qtproject_QRC
 SET( project_pub_DEPS
     Qt6::Core
     Qt6::Widgets
-    Qt6::Gui
     Qt6::WebEngineWidgets
     ${project_pub_DEPS}
 )
