@@ -70,7 +70,7 @@ void CMainWindow::clear()
     fImpl->svgWidget->load( QString() );
 }
 
-void CMainWindow::slotSVGRendered( const QByteArray &svg )
+void CMainWindow::loadSVG( const QByteArray &svg )
 {
     fImpl->plainTextEdit->setPlainText( svg );
 
@@ -83,24 +83,26 @@ void CMainWindow::slotSVGRendered( const QByteArray &svg )
     QApplication::restoreOverrideCursor();
 }
 
+void CMainWindow::slotSVGRendered( const QByteArray &svg )
+{
+    loadSVG( svg );
+}
+
 void CMainWindow::slotSyncRender()
 {
     clear();
     QApplication::setOverrideCursor( Qt::WaitCursor );
-    fEngine->blockSignals( true );
     QByteArray svgCode;
     fEngine->renderSVG(
         fImpl->lineEdit->text(),   //
         [ = ]( const std::optional< QByteArray > &svg )   //
         {
-            fEngine->blockSignals( false );
-
             if ( !svg.has_value() )
             {
                 QMessageBox::critical( this, tr( "Error in MathJax Engine" ), fEngine->errorMessage() );
                 return;
             }
 
-            slotSVGRendered( svg.value() );
+            loadSVG( svg.value() );
         } );
 }
