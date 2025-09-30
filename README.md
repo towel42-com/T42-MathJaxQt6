@@ -1,7 +1,7 @@
 
 # Overview
 
-*QtMathJax* is a `cmake` based `Qt 6` library that allows you to easily add
+*T42-QtMathJax* is a `cmake` based `Qt 6` library that allows you to easily add
 math typesetting into any [Qt] application.
 
 It is based on the work previously done (and forked from) 
@@ -9,7 +9,7 @@ https://github.com/nathancarter/qtmathjax.
 
 [MathJax] is the de facto standard for mathematical typesetting on
 the web, using a JavaScript-based typesetting engine.
-*QtMathJax* imports the latest version (4.0) from https://github.com/mathjax/MathJax
+*T42-QtMathJax* imports the latest version (4.0) from https://github.com/mathjax/MathJax
 as a submodule.  **Note** currently the internal mechanism uses
 the public https://cdn.jsdelivr.net/npm/mathjax@4 *MathJax* system rather
 than using the local version.  This is necessary as there appears to be a 
@@ -30,9 +30,9 @@ a ton of [CMake] utilities.
 
 # Usage (Asynchronous)
 
-To use *QtMathJax*, follow these steps.
+To use *T42-QtMathJax*, follow these steps.
 
-1. In your top level `CMakeLists.txt` file import *QtMathJax* by adding the following
+1. In your top level `CMakeLists.txt` file import *T42-QtMathJax* by adding the following
    line.
    ```
    add_submodule(/path/to/T42-Qt6MathJax)
@@ -41,7 +41,12 @@ To use *QtMathJax*, follow these steps.
    This step will also update your C++ include path
 2. In the source file where you need to use it, include the one
    class you need, `NTowel42::CQt6MathJax`, via `#include "Qt6MathJax.h"`.
-3. Create an instance of the class, connect to the signals you need (`CQt6MathJax::sigSVGRendered is required`)
+3. Enable debugging as necessary.  *T42-Qt6MathJax* uses the modern [QLoggingCategory] system with the following categories
+    - Qt6MathJax - Informational level data
+    - Qt6MathJax.Console - Text/messages from the JavaScript console
+    - Qt6MathJax.QRC - Reports on all the files that are contained in the QRC file
+    - Qt6MathJax.Debug - Low level debug messages
+4. Create an instance of the class, connect to the signals you need (`CQt6MathJax::sigSVGRendered is required`)
     and call the `renderSVG( const QString & texCode )` method.
 
 ```
@@ -79,23 +84,25 @@ in order of their requested rendering.
 # Usage (Synchronous)
 
 There is also an API for synchronous rendering.  You call 
-```renderer.renderSVG( const QString &texCode, std::function< void( const std::optional< QByteArray > & svg ) > )```
+`renderer.renderSVG( const QString &texCode, const std::function< void( const std::optional< QByteArray > & svg ) > & function )`
 and the blocking call will execute and when finished call the lambda sent in.
 
 If there was an error, svg will not have a value.
 
+**NOTE** The signals from the engine `sigErrorMessage` and `sigSVGRendered` will not be emitted in the synchronous rendering.
+
 # Dependencies
 The following [Qt] Libraries must be added as dependencies to your application:
-* [QtCore]
-* [QtWidgets]
-* [QtWebEngineWidgets]
+- [QtCore]
+- [QtWidgets]
+- [QtWebEngineWidgets]
 
 **NOTE** A project is being worked on to remove the WebEngineWidgets dependency and use a node.js engine from
 the [QML] [Qt] module.
 
 # Examples
 
-The repository comes with a 2 sample applications in the [example] subfolder.
+The repository comes with a 2 sample applications in the [examples] subfolder.
 
 The first [example-cli] is a command line application that uses the synchronous 
 call to produce a svg file based on the command line parameters.
@@ -125,9 +132,9 @@ It is my understanding that this is compatible with the
 [CMake]: http://cmake.org
 [MathJax]: http://mathjax.org
 [submodule]: http://schacon.github.io/git/user-manual.html#submodules
-[example]: ./example/
-[example-cli]: ./example/cli
-[example-gui]: ./example/gui
+[examples]: ./examples/
+[example-cli]: ./examples/cli
+[example-gui]: ./examples/gui
 [MIT]: https://opensource.org/license/mit
 [Apache license]: https://github.com/mathjax/MathJax/blob/master/LICENSE
 
