@@ -55,7 +55,6 @@ namespace NTowel42
 
             Q_INVOKABLE void emitErrorMessage( const QVariant &msg );
             Q_INVOKABLE void emitSVGRendered( const QVariant &svgs );
-            Q_INVOKABLE void emitEngineReady( QVariant aOK );
             Q_INVOKABLE void emitRenderingFinished();
 
         Q_SIGNALS:
@@ -69,6 +68,7 @@ namespace NTowel42
             void slotComputeNextInQueue();
 
         private:
+            void engineReady( bool aOK );
             void renderingFinished();
             QString cleanupCode( QString code ) const;
 

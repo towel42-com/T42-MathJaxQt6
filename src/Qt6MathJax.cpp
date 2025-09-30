@@ -197,8 +197,15 @@ namespace NTowel42
             if ( fQueue.empty() )
                 return;
 
-            if ( !engineReady() && !errorMessage().isEmpty() )
+            if ( !engineReady() )
+            {
+                // still loading
+                if ( errorMessage().isEmpty() )
+                {
+                    QTimer::singleShot( 20, this, &CQt6MathJax::slotComputeNextInQueue );
+                }
                 return;
+            }
 
             if ( fRunning )
             {
@@ -335,9 +342,9 @@ namespace NTowel42
             renderingFinished();
         };
 
-        void CQt6MathJax::emitEngineReady( QVariant aOK )
+        void CQt6MathJax::engineReady( bool aOK )
         {
-            fEngineReady = aOK.toBool();
+            fEngineReady = aOK;
             if ( fEngineReady )
                 fLastError.clear();
             emit sigEngineReady( fEngineReady );
@@ -367,7 +374,7 @@ namespace NTowel42
                     break;
                 case QWebEngineLoadingInfo::LoadSucceededStatus:
                     {
-                        emitEngineReady( true );
+                        engineReady( true );
                     }
                     break;
                 case QWebEngineLoadingInfo::LoadFailedStatus:
