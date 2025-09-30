@@ -25,7 +25,7 @@ You make the call via a method (or signal) and are notified when rendering is co
 Just clone this git repo, or use it as a [submodule] in your
 project.  In fact, it uses [MathJax] as a [submodule] itself.
 
-It also has a dependency on `T42-CMakeUtils` a project which contains 
+It also has a dependency on [T42-CMakeUtils] a project which contains 
 a ton of [CMake] utilities.
 
 # Usage (Asynchronous)
@@ -112,9 +112,9 @@ without any changes needed.  It looks like this:
 
 This project is released under the [MIT] licensing.
 It is my understanding that this is compatible with the
-
-
 [Apache license] under which [MathJax] is released.
+
+[T42-CMakeUtils]:     https://github.com/towel42-com/T42-CMakeUtils
 [Qt]:                 http://qt-project.org
 [QtCore]:             https://doc.qt.io/qt-6/qtcore-index.html
 [QtWidgets]:          https://doc.qt.io/qt-6/qtwidgets-index.html
