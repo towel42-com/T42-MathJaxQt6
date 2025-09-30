@@ -38,21 +38,20 @@ public:
 
     // detect whether a string has already been compiled in the past (i.e., is in cache):
     std::optional< QByteArray > beenCreated( const QString &code ) const;
+    void clearCache( const QString &code );
 
     QString errorMessage() const;
     QWebEngineView *webEngineView() const;
-    bool engineReady() const { return fEngineReady;  }
+    bool engineReady() const { return fEngineReady; }
 
-    Q_INVOKABLE void finished();
-    Q_INVOKABLE void finishedWithError( const QString &errorMessage );
     Q_INVOKABLE void emitErrorMessage( const QVariant &msg );
-    Q_INVOKABLE void emitSVGComputed( const QVariant &svg );
+    Q_INVOKABLE void emitSVGComputed( const QVariant & svgs );
     Q_INVOKABLE void emitEngineReady( QVariant aOK );
 
 Q_SIGNALS:
-    void sigErrorMessage( const QString &msg );
-    void sigSVGRendered( const QByteArray &svg );
-    void sigEngineReady( bool aOK );
+    Q_INVOKABLE void sigErrorMessage( const QString &msg );
+    Q_INVOKABLE void sigSVGRendered( const QByteArray &svg );
+    Q_INVOKABLE void sigEngineReady( bool aOK );
 
 public Q_SLOTS:
     void slotLoadingChanged( const QWebEngineLoadingInfo &loadingInfo );
@@ -63,8 +62,7 @@ private:
     QString cleanupCode( QString code ) const;
 
     QWebEngineView *fView{ nullptr };
-    QWebEnginePage *fPage{ nullptr };
-    QWebChannel *fChannel{ nullptr };
+    QWebEnginePage *page();
 
     QString fLastError;
     bool fRunning{ false };
@@ -74,7 +72,6 @@ private:
     mutable std::unordered_map< QString, QString > fCodeCache;
 
     std::list< QString > fQueue;
-    QString fCurrentInput;
 
     void computeNow( const QString &code );
 };

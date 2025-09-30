@@ -9,6 +9,8 @@ class CQt6MathJax_private;
 Q_DECLARE_LOGGING_CATEGORY( Qt6MathJax )
 Q_DECLARE_LOGGING_CATEGORY( Qt6MathJaxConsole )
 Q_DECLARE_LOGGING_CATEGORY( Qt6MathJaxQRC )
+Q_DECLARE_LOGGING_CATEGORY( Qt6MathJaxDebug )
+
 
 
 class CQt6MathJax : public QObject
@@ -23,6 +25,8 @@ public:
 
     // detect whether a string has already been compiled in the past (i.e., is in cache):
     bool beenCreated( const QString &code ) const;
+    void clearCache( const QString &code );
+
     QString errorMessage() const;
     bool hasError() const;
 

@@ -3,7 +3,9 @@
 
 #include <QWebEngineView>
 #include <QWebEnginePage>
+#include <QWebEngineFrame>
 #include <QWebEngineLoadingInfo>
+#include <QDesktopServices>
 
 #include <QCoreApplication>
 #include <QFile>
@@ -11,8 +13,12 @@
 #include <QWebChannel>
 #include <QTimer>
 #include <QMetaEnum>
+#include <QRegularExpression>
+#include <QXmlStreamReader>
+#include <QXmlStreamWriter>
 
 Q_LOGGING_CATEGORY( Qt6MathJax, "Qt6MathJax", QtMsgType::QtInfoMsg )
+Q_LOGGING_CATEGORY( Qt6MathJaxDebug, "Qt6MathJax.Debug", QtMsgType::QtDebugMsg )
 Q_LOGGING_CATEGORY( Qt6MathJaxConsole, "Qt6MathJax.Console", QtMsgType::QtInfoMsg );
 Q_LOGGING_CATEGORY( Qt6MathJaxQRC, "Qt6MathJax.QRC", QtMsgType::QtDebugMsg );
 
@@ -36,18 +42,18 @@ void CWebEnginePage_WConsoleLog::javaScriptConsoleMessage( JavaScriptConsoleMess
 CQt6MathJax_private::CQt6MathJax_private( CQt6MathJax *parent ) :
     QObject( parent )
 {
-    qputenv( "QTWEBENGINE_REMOTE_DEBUGGING", "12345" );
+    //qputenv( "QTWEBENGINE_REMOTE_DEBUGGING", "12345" );
 
     fView = new QWebEngineView;
     fView->setContextMenuPolicy( Qt::NoContextMenu );
+    fView->setMinimumSize( 200, 200 );
 
     auto page = new CWebEnginePage_WConsoleLog( fView );
     connect( page, &CWebEnginePage_WConsoleLog::sigErrorMessage, this, &CQt6MathJax_private::sigErrorMessage );
-    fPage = page;
-    fView->setPage( fPage );
-    fChannel = new QWebChannel( fPage );
-    fChannel->registerObject( QStringLiteral( "qt6MathJax" ), this );
-    fPage->setWebChannel( fChannel );
+    fView->setPage( page );
+    auto channel = new QWebChannel( page );
+    channel->registerObject( QStringLiteral( "qt6MathJax" ), this );
+    page->setWebChannel( channel );
 
     connect( fView, &QWebEngineView::iconChanged, [ = ]( const QIcon &icon ) { qCInfo( Qt6MathJax ) << "QWebEngineView::iconChanged" << icon; } );
     connect( fView, &QWebEngineView::iconUrlChanged, [ = ]( const QUrl &url ) { qCInfo( Qt6MathJax ) << "QWebEngineView::iconUrlChanged: " << url; } );
@@ -64,7 +70,7 @@ CQt6MathJax_private::CQt6MathJax_private( CQt6MathJax *parent ) :
     connect( fView, &QWebEngineView::urlChanged, [ = ]( const QUrl &url ) { qCInfo( Qt6MathJax ) << "QWebEngineView::url changed: " << url; } );
 
     connect(
-        fPage, &QWebEnginePage::loadingChanged,
+        page, &QWebEnginePage::loadingChanged,
         [ = ]( const QWebEngineLoadingInfo &loadingInfo )   //
         {
             qCInfo( Qt6MathJax ).noquote().nospace() << "QWebEnginePage: Loading info:\n";
@@ -77,7 +83,7 @@ CQt6MathJax_private::CQt6MathJax_private( CQt6MathJax *parent ) :
             qCInfo( Qt6MathJax ).noquote().nospace() << "                url: " << loadingInfo.url();
         } );
 
-    connect( fPage, &QWebEnginePage::loadingChanged, this, &CQt6MathJax_private::slotLoadingChanged );
+    connect( page, &QWebEnginePage::loadingChanged, this, &CQt6MathJax_private::slotLoadingChanged );
 
     QTimer::singleShot(
         0,
@@ -114,8 +120,20 @@ QWebEngineView *CQt6MathJax_private::webEngineView() const
 
 std::optional< QByteArray > CQt6MathJax_private::beenCreated( const QString &code ) const
 {
-    auto pos = fSVGCache.find( cleanupCode( code ) );
-    return ( pos != fSVGCache.end() ) ? ( *pos ).second : std::optional< QByteArray >();
+    QString cleanedCode = cleanupCode( code );
+    auto pos = fSVGCache.find( cleanedCode );
+    if ( pos == fSVGCache.end() )
+        return {};
+    return ( *pos ).second;
+}
+
+void CQt6MathJax_private::clearCache( const QString &code )
+{
+    QString cleanedCode = cleanupCode( code );
+    auto pos = fSVGCache.find( cleanedCode );
+    if ( pos == fSVGCache.end() )
+        return;
+    fSVGCache.erase( pos );
 }
 
 QString CQt6MathJax_private::cleanupCode( QString code ) const
@@ -123,8 +141,12 @@ QString CQt6MathJax_private::cleanupCode( QString code ) const
     auto pos = fCodeCache.find( code );
     if ( pos == fCodeCache.end() )
     {
-        auto cleanCode = code.replace( "\\", "\\\\" ).replace( "'", "\\'" ).replace( "\n", "\\\n" ).trimmed();
-        fCodeCache[ code ] = cleanCode;
+        auto origCode = code;
+        code.replace( "\\", "\\\\" ).replace( "'", "\\'" ).replace( "\n", "\\\n" ).trimmed();
+        fCodeCache[ origCode ] = code;
+
+        pos = fCodeCache.find( origCode );
+        Q_ASSERT( pos != fCodeCache.end() );
     }
     else
         code = ( *pos ).second;
@@ -151,20 +173,12 @@ void CQt6MathJax_private::slotComputeNextInQueue()
         return;
     }
 
-    fCurrentInput = cleanupCode( fQueue.front() );
+    auto cleanedCode = cleanupCode( fQueue.front() );
 
     fRunning = true;
     fLastError = QString();
-    auto toRun = QString( "Generate.run('%1');" ).arg( fCurrentInput );
 
-    fPage->runJavaScript(
-        toRun,
-        [ = ]( const QVariant & /*retVal*/ )
-        {
-            fRunning = false;
-            fQueue.pop_front();
-            QTimer::singleShot( 20, this, &CQt6MathJax_private::slotComputeNextInQueue );
-        } );
+    page()->runJavaScript( QString( "Render.run('%1');" ).arg( cleanedCode ) );
 
     QTimer::singleShot( 20, this, &CQt6MathJax_private::slotComputeNextInQueue );
 }
@@ -174,34 +188,110 @@ void CQt6MathJax_private::renderingFinished()
     fRunning = false;
     if ( !fQueue.empty() )
         fQueue.pop_front();
-}
-
-void CQt6MathJax_private::finished()
-{
-    renderingFinished();
-}
-
-void CQt6MathJax_private::finishedWithError( const QString &errorMessage )
-{
-    renderingFinished();
-    fLastError = errorMessage;
-    emit sigErrorMessage( fLastError );
+    QTimer::singleShot( 20, this, &CQt6MathJax_private::slotComputeNextInQueue );
 }
 
 void CQt6MathJax_private::emitErrorMessage( const QVariant &msg )
 {
-    emit sigErrorMessage( msg.toString() );
+    fLastError = msg.toString();
+    emit sigErrorMessage( fLastError );
+}
+
+std::optional< QByteArray > validateXML( const QByteArray &xml )
+{
+    QByteArray xmlOut;
+    QXmlStreamReader reader( xml );
+    QXmlStreamWriter writer( &xmlOut );
+    writer.setAutoFormatting( true );
+    bool invalidElementFound = false;
+    while ( !reader.atEnd() )
+    {
+        reader.readNext();
+        if ( reader.tokenType() != QXmlStreamReader::TokenType::Invalid )
+        {
+            writer.writeCurrentToken( reader );
+        }
+        else
+        {
+            invalidElementFound = true;
+        }
+    }
+    if ( !invalidElementFound )
+        return xmlOut;
+    return {};
+}
+
+QString cleanXML( QStringView byteArray )
+{
+    QString retVal;
+    retVal.reserve( byteArray.length() );
+    std::list< QString > keys;
+    bool inQuote = false;
+    for ( ; !byteArray.isEmpty(); byteArray = byteArray.slice( 1 ) )
+    {
+        auto &&curr = byteArray[ 0 ];
+        if ( curr == '"' )
+        {
+            inQuote = !inQuote;
+            retVal += curr;
+        }
+        else if ( inQuote )
+        {
+            if ( curr == '<' )
+                retVal += "&lt;";
+            else if ( curr == '>' )
+                retVal += "&gt;";
+            else
+                retVal += curr;
+        }
+        else if ( curr == '<' )
+        {
+            if ( !keys.empty() && ( byteArray.length() > 1 ) && ( byteArray[ 1 ] == '/' ) )
+            {
+                auto tmp = QStringView( byteArray ).slice( 2, keys.back().length() );
+                if ( tmp != keys.back() )
+                    int xyz = 0;
+
+                Q_ASSERT( tmp == keys.back() );
+
+                retVal += "\n" + QString( ( keys.size() - 1 ) * 4, ' ' ) + curr + '/' + keys.back();
+                byteArray = byteArray.slice( keys.back().length() + 1 );
+                keys.pop_back();
+            }
+            else
+            {
+                auto keyPos = byteArray.indexOf( QRegularExpression( R"([\s])" ) );
+                auto key = byteArray.mid( 1, keyPos - 1 ).toString();
+                keys.push_back( key );
+                if ( !retVal.isEmpty() )
+                    retVal += "\n" + QString( ( keys.size() - 1 ) * 4, ' ' );
+                retVal += curr + key;
+                byteArray.slice( key.length() );
+            }
+        }
+        else
+            retVal += curr;
+    }
+    return retVal;
 }
 
 void CQt6MathJax_private::emitSVGComputed( const QVariant &value )
 {
-    qCInfo( Qt6MathJax ).noquote().nospace() << "SVG:" << value;
+    qCInfo( Qt6MathJaxDebug ).noquote().nospace() << "Variant:" << value;
 
-    auto svg = value.toByteArray();
-    qCInfo( Qt6MathJax ).noquote().nospace() << "SVG:" << svg;
-
-    fSVGCache[ fCurrentInput ] = svg;
-    emit sigSVGRendered( svg );
+    // orig has html improperly inside quotes
+    auto orig = value.toString();
+    auto origEOL = cleanXML( orig );
+    auto svg = validateXML( origEOL.toUtf8() );
+    if ( svg.has_value() )
+    {
+        qCInfo( Qt6MathJaxDebug ).noquote().nospace() << "SVG:" << svg.value();
+        emit sigSVGRendered( svg.value() );
+        fSVGCache[ fQueue.front() ] = svg.value();
+    }
+    else
+        emitErrorMessage( "Problems rendering equation" );
+    renderingFinished();
 };
 
 void CQt6MathJax_private::emitEngineReady( QVariant aOK )
@@ -219,6 +309,13 @@ QString CQt6MathJax_private::errorMessage() const
 
 void CQt6MathJax_private::slotLoadingChanged( const QWebEngineLoadingInfo &loadingInfo )
 {
+    //static bool first = true;
+    //if ( first )
+    //{
+    //    QDesktopServices::openUrl( QUrl( "http://127.0.0.1:12345" ) );
+    //    first = false;
+    //}
+
     fEngineReady = false;
     switch ( loadingInfo.status() )
     {
@@ -258,6 +355,11 @@ bool CQt6MathJax::beenCreated( const QString &code ) const
     return fImpl->beenCreated( code ).has_value();
 }
 
+void CQt6MathJax::clearCache( const QString &code )
+{
+    return fImpl->clearCache( code );
+}
+
 QString CQt6MathJax::errorMessage() const
 {
     return fImpl->errorMessage();
@@ -281,4 +383,9 @@ QWebEngineView *CQt6MathJax::webEngineView() const
 QWidget *CQt6MathJax::webEngineViewWidget() const
 {
     return webEngineView();
+}
+
+QWebEnginePage *CQt6MathJax_private::page()
+{
+    return fView ? fView->page() : nullptr;
 }
