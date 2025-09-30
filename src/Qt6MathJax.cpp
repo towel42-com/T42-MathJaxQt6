@@ -12,6 +12,7 @@
 #include <QWebEngineLoadingInfo>
 #include <QWebEnginePage>
 #include <QWebEngineView>
+#include <QWebEngineUrlScheme>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 
@@ -44,6 +45,10 @@ namespace NTowel42
         CQt6MathJax::CQt6MathJax( NTowel42::CQt6MathJax *parent ) :
             QObject( parent )
         {
+            QWebEngineUrlScheme qrcScheme( QByteArrayLiteral( "qrc" ) );
+            qrcScheme.setFlags( QWebEngineUrlScheme::FetchApiAllowed );
+            QWebEngineUrlScheme::registerScheme( qrcScheme );
+
             fView = new QWebEngineView;
             fView->setContextMenuPolicy( Qt::NoContextMenu );
             fView->setMinimumSize( 200, 200 );
@@ -90,7 +95,6 @@ namespace NTowel42
                 [ = ]()
                 {
                     QString url = "qrc:/Qt6MathJax/Qt6MathJax.html";
-                    //QString url = "qrc:/Qt6MathJax/tex2svg-line.html";
                     fView->load( url );
                 } );
         }
