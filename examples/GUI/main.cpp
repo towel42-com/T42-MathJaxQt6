@@ -8,7 +8,7 @@
 
 void dumpQRC()
 {
-    if ( !Qt6MathJaxQRC().isDebugEnabled() )
+    if ( !T42Qt6MathJaxQRC().isDebugEnabled() )
         return;
 
     QDirIterator ii( ":", QDirIterator::Subdirectories );
@@ -17,21 +17,19 @@ void dumpQRC()
         // Advance the iterator to the next entry and print its path.
         auto fileName = ii.next();
         auto size = QFileInfo( fileName ).size();
-        qCDebug( Qt6MathJaxQRC ).noquote().nospace() << ii.next() << " " << size;
+        qCDebug( T42Qt6MathJaxQRC ).noquote().nospace() << ii.next() << " " << size;
     }
 }
 
 int main( int argc, char *argv[] )
 {
-    Q_INIT_RESOURCE( Qt6MathJax );
-
-    QApplication a( argc, argv );
-    QLoggingCategory::setFilterRules( ( QStringList() << "*=false" << "js=true" << "Qt6MathJax=true" << "Qt6MathJax.Console=true"  ).join( "\n" ) );
+    QApplication appl( argc, argv );
+    QLoggingCategory::setFilterRules( ( QStringList() << "*=false" << "js=true" << "Towel42.Qt6MathJax=true" << "Towel42.Qt6MathJax.Console=true" ).join( "\n" ) );
 
     dumpQRC();
 
     CMainWindow w;
     w.show();
 
-    return a.exec();
+    return appl.exec();
 }
