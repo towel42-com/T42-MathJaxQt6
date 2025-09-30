@@ -11,4 +11,6 @@ add_subdirectory( examples )
 set_target_properties( Qt6MathJax_other_files PROPERTIES FOLDER CMakePredefinedTargets/QtAutoProjects )
 set_target_properties( Qt6MathJax_resources_1 PROPERTIES FOLDER CMakePredefinedTargets/QtAutoProjects )
 set_target_properties( Qt6MathJax_resources_2 PROPERTIES FOLDER CMakePredefinedTargets/QtAutoProjects )
+set_target_properties( Qt6MathJax-CLIExample_qmlimportscan PROPERTIES FOLDER CMakePredefinedTargets/QtAutoProjects )
+set_target_properties( Qt6MathJax-GUIExample_qmlimportscan PROPERTIES FOLDER CMakePredefinedTargets/QtAutoProjects )
 
