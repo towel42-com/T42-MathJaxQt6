@@ -1,11 +1,10 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
-#include "lib/Qt6MathJax.h"
+#include "include/Qt6MathJax.h"
 
-#include <QWebEngineFrame>
 #include <QWebEngineView>
 #include <QWebEnginePage>
-
+#include <QDesktopServices>
 #include <QSvgRenderer>
 
 #include <QMessageBox>
@@ -15,23 +14,25 @@
 
 CMainWindow::CMainWindow( QWidget *parent ) :
     QMainWindow( parent ),
-    fImpl( new Ui::CMainWindow ),
-    fEngine( new CQt6MathJax )
+    fImpl( new Ui::CMainWindow )
 {
+    NTowel42::CQt6MathJax::enableDebugConsole( 12345 );
+    fEngine = new NTowel42::CQt6MathJax;
+
     fImpl->setupUi( this );
     fImpl->svgWidget->setMinimumSize( MINSIZE, MINSIZE );
     fImpl->lineEdit->setText( R"(x = {-b \pm \sqrt{b^2-4ac} \over 2a})" );
     fImpl->webEngineViewLayout->addWidget( fEngine->webEngineViewWidget() );
     connect( fImpl->lineEdit, &QLineEdit::returnPressed, fImpl->render, &QPushButton::animateClick );
     connect( fImpl->lineEdit, &QLineEdit::textChanged, this, &CMainWindow::slotEnableInput );
-    connect( fImpl->render, &QPushButton::clicked, this, &CMainWindow::slotRender );
+    connect( fImpl->render, &QPushButton::clicked, [ = ]() { fEngine->renderSVG( fImpl->lineEdit->text() ); } );
 
     fImpl->lineEdit->setEnabled( false );
     fImpl->render->setEnabled( false );
 
-    connect( fEngine, &CQt6MathJax::sigEngineReady, this, &CMainWindow::slotEngineReady );
-    connect( fEngine, &CQt6MathJax::sigErrorMessage, this, &CMainWindow::slotErrorMessage );
-    connect( fEngine, &CQt6MathJax::sigSVGRendered, this, &CMainWindow::slotSVGRendered );
+    connect( fEngine, &NTowel42::CQt6MathJax::sigEngineReady, this, &CMainWindow::slotEngineReady );
+    connect( fEngine, &NTowel42::CQt6MathJax::sigErrorMessage, this, &CMainWindow::slotErrorMessage );
+    connect( fEngine, &NTowel42::CQt6MathJax::sigSVGRendered, this, &CMainWindow::slotSVGRendered );
 }
 
 CMainWindow::~CMainWindow()
@@ -40,6 +41,13 @@ CMainWindow::~CMainWindow()
 
 void CMainWindow::slotEngineReady( bool /*aOK*/ )
 {
+    static bool first = true;
+    if ( first )
+    {
+        QDesktopServices::openUrl( QUrl( "http://127.0.0.1:12345" ) );
+        first = false;
+    }
+
     slotEnableInput();
 }
 
@@ -73,9 +81,4 @@ void CMainWindow::slotSVGRendered( const QByteArray &svg )
         slotErrorMessage( tr( "Could not load the SVG file" ) );
         fEngine->clearCache( fImpl->lineEdit->text() );
     }
-}
-
-void CMainWindow::slotRender()
-{
-    fEngine->renderSVG( fImpl->lineEdit->text() );
 }

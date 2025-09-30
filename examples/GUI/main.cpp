@@ -1,7 +1,7 @@
 #include "MainWindow.h"
 #include <QApplication>
 
-#include "lib/Qt6MathJax.h"
+#include "include/Qt6MathJax.h"
 
 #include <QLoggingCategory>
 #include <QDirIterator>
@@ -9,11 +9,16 @@
 
 void dumpQRC()
 {
-    QDirIterator it( ":", QDirIterator::Subdirectories );
-    while ( it.hasNext() )
+    if ( !Qt6MathJaxQRC().isDebugEnabled() )
+        return;
+
+    QDirIterator ii( ":", QDirIterator::Subdirectories );
+    while ( ii.hasNext() )
     {
         // Advance the iterator to the next entry and print its path.
-        qCInfo( Qt6MathJaxQRC ).noquote().nospace() << it.next();
+        auto fileName = ii.next();
+        auto size = QFileInfo( fileName ).size();
+        qCDebug( Qt6MathJaxQRC ).noquote().nospace() << ii.next() << " " << size;
     }
 }
 

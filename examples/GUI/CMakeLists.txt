@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 cmake_minimum_required(VERSION 3.22)
-project(Qt6MathJax-Example) 
+project(Qt6MathJax-GUIExample) 
 
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui WebEngineWidgets SvgWidgets )
 
@@ -43,7 +43,7 @@ set ( DEBUG_PATH
         )
 
 set_target_properties( ${PROJECT_NAME} PROPERTIES 
-        FOLDER Qt6MathJax 
+        FOLDER T42-Qt6MathJax-root 
         VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:${PROJECT_NAME}>" 
         VS_DEBUGGER_COMMAND "$<TARGET_FILE:${PROJECT_NAME}>" 
         VS_DEBUGGER_ENVIRONMENT "PATH=${DEBUG_PATH}" 

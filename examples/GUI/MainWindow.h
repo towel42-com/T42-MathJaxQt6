@@ -5,7 +5,10 @@
 #include <QMainWindow>
 #include <memory>
 
-class CQt6MathJax;
+namespace NTowel42
+{
+    class CQt6MathJax;
+}
 
 namespace Ui
 {
@@ -23,7 +26,6 @@ public:
     ~CMainWindow();
 
 private slots:
-    void slotRender();
     void slotEngineReady( bool aOK );
     void slotSVGRendered( const QByteArray &svg );
     void slotErrorMessage( const QString &msg );
@@ -31,7 +33,7 @@ private slots:
 
 private:
     std::unique_ptr< Ui::CMainWindow > fImpl{};
-    CQt6MathJax *fEngine{ nullptr };
+    NTowel42::CQt6MathJax *fEngine{ nullptr };
 };
 
 #endif   // MAINWINDOW_H
