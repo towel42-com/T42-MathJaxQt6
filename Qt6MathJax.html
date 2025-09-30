@@ -32,7 +32,7 @@
                     msg = `TeX error in "${jax.latex}": ${error.message}`;
                     console.log(msg);
                     if (qt6MathJax != null) {
-                        qt6MathJax.emitErrorMessage(msg);
+                        qt6MathJax.errorMessage(msg);
                     }
                     return jax.formatError(error);
                 }
@@ -55,70 +55,78 @@
         };
 
         const Render = {
+            reportException(e, output) {
+                if (output != null) {
+                    output.innerHTML = `<pre>Error: ${e.message}</pre>`;
+                }
+
+                console.error(e);
+
+                if (qt6MathJax != null) {
+                    qt6MathJax.renderingFinished();
+                }
+            },
             async run(input) {
                 if (input == null) {
                     input = document.querySelector('#input').value.trim();
-                }
 
-                if (input == null) {
-                    msg = "Could not find input node";
-                    if (qt6MathJax != null) {
-                        qt6MathJax.emitErrorMessage(msg);
+                    if (input == null) {
+                        msg = "Could not find input node";
+                        if (qt6MathJax != null) {
+                            qt6MathJax.errorMessage(msg);
+                        }
+                        console.error(msg);
+                        return null;
                     }
-                    console.error(msg);
-                    return null;
                 }
 
                 console.log("Input: '" + input + "'");
 
-                MathJax.texReset();
-                options = null;
-
                 const output = document.querySelector('#MathOutput');
-                if (output == null) {
-                    options = MathJax.getMetricsFor(output);
-                    console.log("Could not find output div");
-                }
-                else {
-                    console.log("Found output div");
-                }
-
-                MathJax.texReset();
-                options = MathJax.getMetricsFor(output);
-
-                MathJax.startup.document.clear();
-                console.log("About to run");
-                await MathJax.tex2svgPromise(input, options).then((node) => {
-                    console.log("MathJax has finished rendering the SVG");
-                    if (output != null) {
-                        console.log("Updating output");
-                        output.innerHTML = '';
-                        output.appendChild(node);
-                        MathJax.startup.document.updateDocument();
-                    } else {
-                        console.log("Output not found");
+                try {
+                    options = null;
+                    if (output == null) {
+                        options = MathJax.getMetricsFor(output);
+                        console.log("Could not find output div");
+                    }
+                    else {
+                        console.log("Found output div");
                     }
 
-                    if (qt6MathJax != null) {
-                        for (const child of node.children) {
-                            if (child.tagName == "svg") {
-                                qt6MathJax.emitSVGRendered(child.outerHTML);
-                                //console.log(child.outerHTML);
+                    console.log("About to run");
+
+                    console.log("Reseting core engine");
+                    MathJax.texReset();
+                    options = MathJax.getMetricsFor(output);
+                    MathJax.startup.document.clear();
+
+                    console.log("Calling tex2svg");
+                    await MathJax.tex2svgPromise(input, options).then((node) => {
+                        console.log("MathJax has finished rendering the SVG");
+                        if (output != null) {
+                            console.log("Updating output");
+                            output.innerHTML = '';
+                            output.appendChild(node);
+                            MathJax.startup.document.updateDocument();
+                        } else {
+                            console.log("Output not found");
+                        }
+
+                        if (qt6MathJax != null) {
+                            for (const child of node.children) {
+                                if (child.tagName == "svg") {
+                                    qt6MathJax.svgRendered(child.outerHTML);
+                                    qt6MathJax.renderingFinished();
+                                }
                             }
                         }
-                    }
-                }).catch((err) => {
-                    if (output != null) {
-                        output.innerHTML = `<pre>Error: ${err.message}</pre>`;
-                    }
-                    console.error(err);
-                    if (qt6MathJax != null) {
-                        qt6MathJax.emitErrorMessage(err.message);
-                    }
-                })
+                    });
+                } catch (e) {
+                    Render.reportException(e, output);
+                }
                 console.log("Post Async Call");
                 return "Started";
-            },
+            }
         };
     </script>
 </head>
