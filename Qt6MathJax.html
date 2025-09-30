@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <script class="show" defer src="qrc:/qtwebchannel/qwebchannel.js"></script>
-    <!--<script class="show" defer src="qrc:/MathJax/MathJax/tex-svg.js"></script>-->
+    <!--<script class="show" defer src="qrc:/MathJax/MathJax/tex-svg-nofont.js"></script>-->
     <script class="show" defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-svg-nofont.js"></script>
     <script class="show" defer>
         var qt6MathJax = null;
@@ -12,7 +12,7 @@
         document.addEventListener("DOMContentLoaded", function () {
             //console.log(typeof QWebChannel);
             //console.log(typeof qt);
-            if ( ( typeof qt != undefined ) && (typeof QWebChannel === 'function') ) {
+            if ((typeof qt != undefined) && (typeof QWebChannel === 'function')) {
                 typeof QWebChannel
                 new QWebChannel(qt.webChannelTransport,
                     function (channel) {
@@ -23,7 +23,7 @@
         });
 
         MathJax = {
-            svg: { fontCache: 'global' },
+            svg: { fontCache: 'none' },
             loader: {
                 load: ['[tex]/texhtml']
             },
@@ -55,7 +55,7 @@
             }
         };
 
-        const Generate = {
+        const Render = {
             async run(input) {
                 if (input == null) {
                     input = document.querySelector('#input').value.trim();
@@ -83,28 +83,30 @@
                 else {
                     console.log("Found output div");
                 }
-                
-				MathJax.texReset();
+
+                MathJax.texReset();
                 options = MathJax.getMetricsFor(output);
-				
+
                 MathJax.startup.document.clear();
                 console.log("About to run");
                 await MathJax.tex2svgPromise(input, options).then((node) => {
-                    console.log("Found svg node '" + node + "'");
-
-                    for (const child of node.children) {
-                        if (child.tagName == "svg") {
-                            console.log(child.outerHTML);
-                            if (qt6MathJax != null) {
-                                qt6MathJax.emitSVGComputed(child.outerHTML);
-                            }
-                        }
-                    }
-
+                    console.log("MathJax has finished rendering the SVG");
                     if (output != null) {
+                        console.log("Updating output");
                         output.innerHTML = '';
                         output.appendChild(node);
                         MathJax.startup.document.updateDocument();
+                    } else {
+                        console.log("Output not found");
+                    }
+
+                    if (qt6MathJax != null) {
+                        for (const child of node.children) {
+                            if (child.tagName == "svg") {
+                                qt6MathJax.emitSVGComputed(child.outerHTML);
+                                //console.log(child.outerHTML);
+                            }
+                        }
                     }
                 }).catch((err) => {
                     if (output != null) {
@@ -115,7 +117,8 @@
                         qt6MathJax.emitErrorMessage(err.message);
                     }
                 })
-                console.log("Post Call");
+                console.log("Post Async Call");
+                return "Started";
             },
         };
     </script>
@@ -124,7 +127,7 @@
     <div id="MathInput" class="show display">
         <div id="MathOutput"></div>
         <input type="text" id="input" value="x = {-b \pm \sqrt{b^2-4ac} \over 2a}" />
-        <input type="button" value="Render" id="render" onclick="Generate.run()" />
+        <input type="button" value="Render" id="render" onclick="Render.run()" />
     </div>
 </body>
 </html>
