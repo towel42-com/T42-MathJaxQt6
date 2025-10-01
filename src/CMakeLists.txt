@@ -10,6 +10,8 @@ find_package(Deploy REQUIRED)
 add_library(
     ${PROJECT_NAME} STATIC
     ${_PROJECT_DEPENDENCIES} 
+    ../Qt6MathJax.js
+    ../Qt6MathJaxInit.js
     ../Qt6MathJax.html
 )
 
@@ -31,6 +33,8 @@ qt_add_resources(${PROJECT_NAME} "${PROJECT_NAME}"
         "${CMAKE_CURRENT_SOURCE_DIR}"
     FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/../Qt6MathJax.html
+        ${CMAKE_CURRENT_SOURCE_DIR}/../Qt6MathJax.js
+        ${CMAKE_CURRENT_SOURCE_DIR}/../Qt6MathJaxInit.js
 )
 
 target_link_libraries( ${PROJECT_NAME}

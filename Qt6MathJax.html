@@ -3,140 +3,19 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <script class="show" defer src="qrc:/qtwebchannel/qwebchannel.js"></script>
+    <script class="show" src="qrc:/qtwebchannel/qwebchannel.js"></script>
     <script class="show" defer src="qrc:/MathJax/MathJax/tex-svg-nofont.js"></script>
-    <script class="show" defer>
-        var qt6MathJax = null;
-        var inputStr = 'x = {-b \\pm \\sqrt{b^2-4ac} \\over 4a}';
-        document.addEventListener("DOMContentLoaded", function () {
-            //console.log(typeof QWebChannel);
-            //console.log(typeof qt);
-            if ((typeof qt != undefined) && (typeof QWebChannel === 'function')) {
-                typeof QWebChannel
-                new QWebChannel(qt.webChannelTransport,
-                    function (channel) {
-                        qt6MathJax = channel.objects.qt6MathJax;
-                    }
-                );
-            }
-        });
-
-        MathJax = {
-            svg: { fontCache: 'none' },
-            loader: {
-                load: ['[tex]/texhtml']
-            },
-            tex: {
-                packages: { '[+]': ['texhtml'] },
-                formatError(jax, error) {
-                    msg = `TeX error in "${jax.latex}": ${error.message}`;
-                    console.log(msg);
-                    if (qt6MathJax != null) {
-                        qt6MathJax.errorMessage(msg);
-                    }
-                    return jax.formatError(error);
-                }
-            },
-            options: {
-                enableMenu: true,
-                enableSpeech: false,       // false to disable speech strings
-                enableBraille: false,      // false to disable Braille notation
-                a11y: {
-                    speech: false,           // switch on speech output when enabled
-                    braille: false,          // switch on Braille output when enabled
-                }
-            },
-            startup: {
-                ready() {
-                    MathJax.startup.defaultReady();
-                    const doc = MathJax.startup.document;
-                }
-            }
-        };
-
-        const Render = {
-            reportException(e, output) {
-                if (output != null) {
-                    output.innerHTML = `<pre>Error: ${e.message}</pre>`;
-                }
-
-                console.error(e);
-
-                if (qt6MathJax != null) {
-                    qt6MathJax.renderingFinished();
-                }
-            },
-            async run(input) {
-                if (input == null) {
-                    input = document.querySelector('#input').value.trim();
-
-                    if (input == null) {
-                        msg = "Could not find input node";
-                        if (qt6MathJax != null) {
-                            qt6MathJax.errorMessage(msg);
-                        }
-                        console.error(msg);
-                        return null;
-                    }
-                }
-
-                console.log("Input: '" + input + "'");
-
-                const output = document.querySelector('#MathOutput');
-                try {
-                    options = null;
-                    if (output == null) {
-                        options = MathJax.getMetricsFor(output);
-                        console.log("Could not find output div");
-                    }
-                    else {
-                        console.log("Found output div");
-                    }
-
-                    console.log("About to run");
-
-                    console.log("Reseting core engine");
-                    MathJax.texReset();
-                    options = MathJax.getMetricsFor(output);
-                    MathJax.startup.document.clear();
-
-                    console.log("Calling tex2svg");
-                    await MathJax.tex2svgPromise(input, options).then((node) => {
-                        console.log("MathJax has finished rendering the SVG");
-                        if (output != null) {
-                            console.log("Updating output");
-                            output.innerHTML = '';
-                            output.appendChild(node);
-                            MathJax.startup.document.updateDocument();
-                        } else {
-                            console.log("Output not found");
-                        }
-
-                        if (qt6MathJax != null) {
-                            for (const child of node.children) {
-                                if (child.tagName == "svg") {
-                                    qt6MathJax.svgRendered(child.outerHTML);
-                                    qt6MathJax.renderingFinished();
-                                }
-                            }
-                        }
-                    });
-                } catch (e) {
-                    Render.reportException(e, output);
-                }
-                console.log("Post Async Call");
-                return "Started";
-            }
-        };
-    </script>
+    <script class="show" defer src="qrc:/Qt6MathJax/Qt6MathJax.js"></script>
 </head>
 <body>
     <div id="MathInput" class="show display">
         <div id="MathOutput"></div>
         <input type="text" id="input" value="x = {-b \pm \sqrt{b^2-4ac} \over 2a}" />
-        <input type="button" value="Render" id="render" onclick="Render.run()" />
+        <input type="button" value="Render" id="render" onclick="Render.render()" />
     </div>
-    <script class="show" defer>
+
+    <script class="show" src="qrc:/Qt6MathJax/Qt6MathJaxInit.js"></script>
+    <script class="show">
         document.getElementById('render').style.display = 'none';
         document.getElementById('input').style.display = 'none';
     </script>
