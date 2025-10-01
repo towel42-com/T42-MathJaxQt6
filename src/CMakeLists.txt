@@ -19,7 +19,7 @@ file( GLOB_RECURSE QRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../MathJax/* )
 list(FILTER QRC_FILES EXCLUDE REGEX ".git.*")
 qt_add_resources(${PROJECT_NAME} "MathJax"
     PREFIX
-        "/MathJax"
+        "/"
     BASE
         "MathJax"
     FILES
