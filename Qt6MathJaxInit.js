@@ -1,8 +1,5 @@
 MathJax = {
     svg: { fontCache: 'none' },
-    loader: {
-        load: ['[tex]/texhtml']
-    },
     tex: {
         packages: { '[+]': ['texhtml'] },
         formatError(jax, error) {
