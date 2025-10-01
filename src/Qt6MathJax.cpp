@@ -32,7 +32,11 @@ namespace NTowel42
 
         void CWebEnginePage_WConsoleLog::javaScriptConsoleMessage( JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID )
         {
-            auto typeString = QMetaEnum::fromType< JavaScriptConsoleMessageLevel >().valueToKey( level );
+            auto typeString = QString( QMetaEnum::fromType< JavaScriptConsoleMessageLevel >().valueToKey( level ) );
+            auto pos = typeString.indexOf( "MessageLevel" );
+            if ( pos != -1 )
+                typeString = typeString.mid( 0, pos );
+
             auto msg = tr( "%1: %2:%3 - %4" ).arg( typeString ).arg( sourceID ).arg( lineNumber ).arg( message );
 
             qCInfo( T42Qt6MathJaxConsole ).nospace().noquote() << msg;
@@ -68,7 +72,7 @@ namespace NTowel42
                 page, &QWebEnginePage::loadingChanged,
                 [ = ]( const QWebEngineLoadingInfo &loadingInfo )   //
                 {
-                    qCInfo( T42Qt6MathJaxDebug ).noquote().nospace() << "QWebEnginePage: Loading info:\n";
+                    qCInfo( T42Qt6MathJaxDebug ).noquote().nospace() << "QWebEnginePage: Loading info:";
                     qCInfo( T42Qt6MathJaxDebug ).noquote().nospace() << "          errorCode: " << loadingInfo.errorCode();
                     qCInfo( T42Qt6MathJaxDebug ).noquote().nospace() << "        errorString: \"" << loadingInfo.errorString() << "\"";
                     //qCInfo( T42Qt6MathJaxDebug ).noquote().nospace() << "         isDownload: " << loadingInfo.isDownload();
@@ -227,7 +231,11 @@ namespace NTowel42
             fLastError = QString();
             auto cleanedCode = fQueue.front().fClean;
 
-            page()->runJavaScript( QString( "Render.run('%1');" ).arg( cleanedCode ) );
+            auto codeToRun = QString(   //
+                                 "renderer = new Renderer();"
+                                 "renderer.render('%1');" )
+                                 .arg( cleanedCode );
+            page()->runJavaScript( codeToRun );
         }
 
         void CQt6MathJax::renderingFinished()
