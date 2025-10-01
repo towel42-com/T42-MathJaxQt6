@@ -191,7 +191,7 @@ namespace NTowel42
                     connect( this, &CQt6MathJax::sigErrorMessage, onErrorMessage );
             }
 
-            QTimer::singleShot( 0, this, &CQt6MathJax::slotComputeNextInQueue );
+            QTimer::singleShot( 0, this, &CQt6MathJax::slotRenderNextInQueue );
 
             if ( postRenderFunction )
             {
@@ -206,7 +206,7 @@ namespace NTowel42
             }
         }
 
-        void CQt6MathJax::slotComputeNextInQueue()
+        void CQt6MathJax::slotRenderNextInQueue()
         {
             if ( fQueue.empty() )
                 return;
@@ -216,14 +216,14 @@ namespace NTowel42
                 // still loading
                 if ( errorMessage().isEmpty() )
                 {
-                    QTimer::singleShot( 200, this, &CQt6MathJax::slotComputeNextInQueue );
+                    QTimer::singleShot( 200, this, &CQt6MathJax::slotRenderNextInQueue );
                 }
                 return;
             }
 
             if ( fRunning )
             {
-                QTimer::singleShot( 200, this, &CQt6MathJax::slotComputeNextInQueue );
+                QTimer::singleShot( 200, this, &CQt6MathJax::slotRenderNextInQueue );
                 return;
             }
 
@@ -245,7 +245,7 @@ namespace NTowel42
             if ( !fQueue.empty() )
                 fQueue.pop_front();
             if ( !fQueue.empty() )
-                QTimer::singleShot( 0, this, &CQt6MathJax::slotComputeNextInQueue );
+                QTimer::singleShot( 0, this, &CQt6MathJax::slotRenderNextInQueue );
         }
 
         void CQt6MathJax::errorMessage( const QVariant &msg )

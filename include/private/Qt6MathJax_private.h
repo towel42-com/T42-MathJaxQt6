@@ -65,7 +65,7 @@ namespace NTowel42
 
         public Q_SLOTS:
             void slotLoadingChanged( const QWebEngineLoadingInfo &loadingInfo );
-            void slotComputeNextInQueue();
+            void slotRenderNextInQueue();
 
         private:
             void setupDebugTracing();
@@ -89,8 +89,6 @@ namespace NTowel42
                 QString fClean;
             };
             std::list< SQueuedRequests > fQueue;
-
-            void computeNow( const QString &code );
         };
     }
 }
