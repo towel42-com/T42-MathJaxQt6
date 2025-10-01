@@ -20,7 +20,9 @@ void setupDebug( int debugLevel, int port )
         };
     if ( debugLevel > 0 )
     {
-        NTowel42::CQt6MathJax::enableDebugConsole( port );
+        if ( ( port >= 0 ) && ( port <= 65535 ) )
+            NTowel42::CQt6MathJax::enableDebugConsole( port );
+
         catVector[ 0 ].second = true;
         catVector[ 1 ].second = true;
     }
@@ -70,14 +72,14 @@ int main( int argc, char *argv[] )
     auto debugOption = QCommandLineOption(
         QStringList() << "debug" << "d",
         "Debug level <default=0>\n"
-        "1 - Enables the Chromium Debug System at the port set via -port, as well as the 'js', 'Towel42.Qt6MathJax' logging categories\n"
-        "2 - Enables level 1 and the Towel42.Qt6MathJax.Console logging category\n"
-        "3 - Enables level 2 and the Towel42.Qt6MathJax.Debug\n"
-        "4 - Enables level 2 and the Towel42.Qt6MathJax.QRC",
+        "    1 - Enables the Chromium Debug System at the port set via -port, as well as the 'js', 'Towel42.Qt6MathJax' logging categories\n"
+        "    2 - Enables level 1 and the Towel42.Qt6MathJax.Console logging category\n"
+        "    3 - Enables level 2 and the Towel42.Qt6MathJax.Debug\n"
+        "    4 - Enables level 2 and the Towel42.Qt6MathJax.QRC",
         "level", "0" );
     parser.addOption( debugOption );
 
-    auto debugPortOption = QCommandLineOption( QStringList() << "port" << "p", "Debug Port <default=12345>", "port", "12345" );
+    auto debugPortOption = QCommandLineOption( QStringList() << "port" << "p", "Debug Port <default=12345>\n    If port is less than zero, the Chromium Debugger will not be enabled", "port", "12345" );
     parser.addOption( debugPortOption );
 
     parser.process( appl );
@@ -122,7 +124,7 @@ int main( int argc, char *argv[] )
     }
 
     auto port = parser.value( debugPortOption ).toInt( &aOK );
-    if ( !aOK || ( ( port < 0 ) || ( port > 65535 ) ) )
+    if ( !aOK )
     {
         std::cerr << "Could not process debug port '" << parser.value( debugPortOption ).toStdString() << "' must be an integer between 0 and 65535\n";
         return -1;
