@@ -10,31 +10,31 @@ find_package(Deploy REQUIRED)
 add_library(
     ${PROJECT_NAME} STATIC
     ${_PROJECT_DEPENDENCIES} 
-    ../Qt6MathJax.js
-    ../Qt6MathJaxInit.js
-    ../Qt6MathJax.html
+    ../assets/Qt6MathJax.js
+    ../assets/Qt6MathJaxInit.js
+    ../assets/Qt6MathJax.html
 )
 
-file( GLOB_RECURSE QRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../MathJax/* )
+file( GLOB_RECURSE QRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../mathjax/* )
 list(FILTER QRC_FILES EXCLUDE REGEX ".git.*")
-qt_add_resources(${PROJECT_NAME} "MathJax"
+qt6_add_resources(${PROJECT_NAME} "mathjax"
     PREFIX
         "/"
     BASE
-        "MathJax"
+        "mathjax"
     FILES
         ${QRC_FILES}
 )
 
-qt_add_resources(${PROJECT_NAME} "${PROJECT_NAME}"
+qt6_add_resources(${PROJECT_NAME} "${PROJECT_NAME}"
     PREFIX
         "/${PROJECT_NAME}"
     BASE
-        "${CMAKE_CURRENT_SOURCE_DIR}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../assets"
     FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/../Qt6MathJax.html
-        ${CMAKE_CURRENT_SOURCE_DIR}/../Qt6MathJax.js
-        ${CMAKE_CURRENT_SOURCE_DIR}/../Qt6MathJaxInit.js
+        ${CMAKE_CURRENT_SOURCE_DIR}/../assets/Qt6MathJax.html
+        ${CMAKE_CURRENT_SOURCE_DIR}/../assets/Qt6MathJax.js
+        ${CMAKE_CURRENT_SOURCE_DIR}/../assets/Qt6MathJaxInit.js
 )
 
 target_link_libraries( ${PROJECT_NAME}
