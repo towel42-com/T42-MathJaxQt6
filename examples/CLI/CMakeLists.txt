@@ -29,21 +29,16 @@ include( ${CMAKE_SOURCE_DIR}/T42-CMakeUtils/QtProject.cmake )
 
 qt_add_executable( ${PROJECT_NAME} 
                 ${_PROJECT_DEPENDENCIES} 
-          )
+         )
 
-if ( NOT DEPLOYQT_EXECUTABLE )
-    message( FATAL_ERROR "DEPLOYQT_EXECUTABLE not set" )
-endif()
-
-get_filename_component( QTDIR ${DEPLOYQT_EXECUTABLE} DIRECTORY )
 include_directories( ${CMAKE_BINARY_DIR} )
 set ( DEBUG_PATH 
         "%PATH%"
-        "${QTDIR}"
+        "${T42_QTBINDIR}"
         )
 
 set_target_properties( ${PROJECT_NAME} PROPERTIES 
-        FOLDER T42-Qt6MathJax-root 
+        FOLDER T42-Qt6MathJax
         VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:${PROJECT_NAME}>" 
         VS_DEBUGGER_COMMAND "$<TARGET_FILE:${PROJECT_NAME}>" 
         VS_DEBUGGER_ENVIRONMENT "PATH=${DEBUG_PATH}" 
@@ -57,9 +52,10 @@ target_link_libraries( ${PROJECT_NAME}
           ${project_pri_DEPS}
 )
 
-DeployQt( ${PROJECT_NAME} . )
-DeploySystem( ${PROJECT_NAME} . INSTALL_ONLY 1 )
+DeployQt( ${PROJECT_NAME} . EXTRA_TARGETS T42Qt6MathJax )
+DeploySystem( ${PROJECT_NAME} . INSTALL_ONLY 1)
 
 INSTALL( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin )
 INSTALL( FILES ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.pdb DESTINATION . CONFIGURATIONS Debug RelWithDebInfo )
 
+#Qt6Core Qt6Gui Qt6Network Qt6OpenGL Qt6Positioning Qt6PrintSupport Qt6Qml Qt6QmlMeta Qt6QmlModels Qt6QmlWorkerScript Qt6Quick Qt6QuickWidgets Qt6WebChannel Qt6WebEngineCore Qt6WebEngineWidgets Qt6Widgets

@@ -22,5 +22,6 @@ set(qtproject_QRC
         Qt6::Widgets
         Qt6::Core
         Qt6::SvgWidgets
-        Qt6MathJax
+        Qt6::WebEngineWidgets
+        T42Qt6MathJax
 )

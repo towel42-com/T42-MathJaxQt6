@@ -17,7 +17,7 @@ set(qtproject_QRC
 
  set( project_pub_DEPS
         Qt6::Widgets
-        Qt6::SvgWidgets
         Qt6::Core
-        Qt6MathJax
+        Qt6::WebEngineWidgets
+        T42Qt6MathJax
 )

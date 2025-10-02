@@ -23,7 +23,6 @@ cmake_minimum_required(VERSION 3.22)
 project(Qt6MathJax-GUIExample) 
 
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui WebEngineWidgets SvgWidgets )
-
 include( include.cmake )
 include( ${CMAKE_SOURCE_DIR}/T42-CMakeUtils/QtProject.cmake )
 
@@ -31,19 +30,14 @@ qt_add_executable( ${PROJECT_NAME} WIN32
                 ${_PROJECT_DEPENDENCIES} 
           )
 
-if ( NOT DEPLOYQT_EXECUTABLE )
-    message( FATAL_ERROR "DEPLOYQT_EXECUTABLE not set" )
-endif()
-
-get_filename_component( QTDIR ${DEPLOYQT_EXECUTABLE} DIRECTORY )
 include_directories( ${CMAKE_BINARY_DIR} )
 set ( DEBUG_PATH 
         "%PATH%"
-        "${QTDIR}"
+        "${T42_QTBINDIR}"
         )
 
 set_target_properties( ${PROJECT_NAME} PROPERTIES 
-        FOLDER T42-Qt6MathJax-root 
+        FOLDER T42-Qt6MathJax
         VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:${PROJECT_NAME}>" 
         VS_DEBUGGER_COMMAND "$<TARGET_FILE:${PROJECT_NAME}>" 
         VS_DEBUGGER_ENVIRONMENT "PATH=${DEBUG_PATH}" 
@@ -57,7 +51,7 @@ target_link_libraries( ${PROJECT_NAME}
           ${project_pri_DEPS}
 )
 
-DeployQt( ${PROJECT_NAME} . )
+DeployQt( ${PROJECT_NAME} . EXTRA_TARGETS T42Qt6MathJax )
 DeploySystem( ${PROJECT_NAME} . INSTALL_ONLY 1 )
 
 INSTALL( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin )

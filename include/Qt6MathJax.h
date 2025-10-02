@@ -1,15 +1,17 @@
 #ifndef QT6MATHJAX_H
 #define QT6MATHJAX_H
 
+#include "T42Qt6MathJaxExport.h"
+
 #include <QObject>
 #include <QLoggingCategory>
 
 class QWebEngineView;
 
-Q_DECLARE_LOGGING_CATEGORY( T42Qt6MathJax )
-Q_DECLARE_LOGGING_CATEGORY( T42Qt6MathJaxConsole )
-Q_DECLARE_LOGGING_CATEGORY( T42Qt6MathJaxQRC )
-Q_DECLARE_LOGGING_CATEGORY( T42Qt6MathJaxDebug )
+T42QT6MATHJAX_EXPORT Q_DECLARE_LOGGING_CATEGORY( T42Qt6MathJax );
+T42QT6MATHJAX_EXPORT Q_DECLARE_LOGGING_CATEGORY( T42Qt6MathJaxConsole );
+T42QT6MATHJAX_EXPORT Q_DECLARE_LOGGING_CATEGORY( T42Qt6MathJaxQRC );
+T42QT6MATHJAX_EXPORT Q_DECLARE_LOGGING_CATEGORY( T42Qt6MathJaxDebug );
 
 namespace NTowel42
 {
@@ -17,7 +19,7 @@ namespace NTowel42
     {
         class CQt6MathJax;
     }
-    class CQt6MathJax : public QObject
+    class T42QT6MATHJAX_EXPORT CQt6MathJax : public QObject
     {
         Q_OBJECT
     public:
