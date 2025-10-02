@@ -30,6 +30,7 @@ set(qtproject_H
 )
 
 set(project_H
+    ../include/T42Qt6MathJaxExport.h
 )
 
 set(qtproject_UIS
