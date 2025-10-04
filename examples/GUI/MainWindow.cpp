@@ -81,10 +81,16 @@ void CMainWindow::loadSVG( const QByteArray &svg )
         slotErrorMessage( tr( "Could not load the SVG file" ) );
         fEngine->clearCache( fImpl->lineEdit->text() );
     }
+    else
+    {
+        auto sz = fImpl->svgWidget->sizeHint().scaled( QSize( 200, 0 ), Qt::KeepAspectRatioByExpanding );
+        fImpl->svgWidget->setMinimumSize( sz );
+        fImpl->svgWidget->setMaximumSize( sz );
+    }
     QApplication::restoreOverrideCursor();
 }
 
-void CMainWindow::slotSVGRendered( const QString &/*tex*/, const QByteArray &svg )
+void CMainWindow::slotSVGRendered( const QString & /*tex*/, const QByteArray &svg )
 {
     loadSVG( svg );
 }
