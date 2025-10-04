@@ -51,7 +51,7 @@ namespace NTowel42
     Q_SIGNALS:
         void sigEngineReady( bool aOK );
         void sigErrorMessage( const QString &msg );
-        void sigSVGRendered( const QByteArray &svg );
+        void sigSVGRendered( const QString & tex, const QByteArray &svg );
 
     private:
         NPrivate::CQt6MathJax *fImpl{ nullptr };

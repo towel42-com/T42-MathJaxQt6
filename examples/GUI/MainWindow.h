@@ -27,7 +27,7 @@ public:
 
 private slots:
     void slotEngineReady( bool aOK );
-    void slotSVGRendered( const QByteArray &svg );
+    void slotSVGRendered( const QString & tex, const QByteArray &svg );
 
 private:
     void loadSVG( const QByteArray &svg );

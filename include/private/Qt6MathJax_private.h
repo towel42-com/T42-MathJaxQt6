@@ -59,7 +59,7 @@ namespace NTowel42
 
         Q_SIGNALS:
             Q_INVOKABLE void sigErrorMessage( const QString &msg );
-            Q_INVOKABLE void sigSVGRendered( const QByteArray &svg );
+            Q_INVOKABLE void sigSVGRendered( const QString &tex, const QByteArray &svg );
             Q_INVOKABLE void sigEngineReady( bool aOK );
             Q_INVOKABLE void sigRenderingFinished();
 

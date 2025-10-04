@@ -6,27 +6,10 @@
 #include <QLoggingCategory>
 #include <QDirIterator>
 
-void dumpQRC()
-{
-    if ( !T42Qt6MathJaxQRC().isDebugEnabled() )
-        return;
-
-    QDirIterator ii( ":", QDirIterator::Subdirectories );
-    while ( ii.hasNext() )
-    {
-        // Advance the iterator to the next entry and print its path.
-        auto fileName = ii.next();
-        auto size = QFileInfo( fileName ).size();
-        qCDebug( T42Qt6MathJaxQRC ).noquote().nospace() << ii.next() << " " << size;
-    }
-}
-
 int main( int argc, char *argv[] )
 {
     QApplication appl( argc, argv );
-    QLoggingCategory::setFilterRules( ( QStringList() << "*=false" << "js=true" << "Towel42.Qt6MathJax=true" << "Towel42.Qt6MathJax.Console=true" ).join( "\n" ) );
-
-    dumpQRC();
+    QLoggingCategory::setFilterRules( ( QStringList() << "*=false" << "js=true" << "Towel42.Qt6MathJax=true" << "Towel42.Qt6MathJax.*=true" ).join( "\n" ) );
 
     CMainWindow w;
     w.show();

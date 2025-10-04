@@ -16,6 +16,7 @@ CMainWindow::CMainWindow( QWidget *parent ) :
     fImpl( new Ui::CMainWindow )
 {
     NTowel42::CQt6MathJax::enableDebugConsole( 12345 );
+    QLoggingCategory::setFilterRules( ( QStringList() << "*=false" << "js=true" << "Towel42.Qt6MathJax=true" << "Towel42.Qt6MathJax.*=true" ).join( "\n" ) );
     fEngine = new NTowel42::CQt6MathJax;
 
     fImpl->setupUi( this );
@@ -83,7 +84,7 @@ void CMainWindow::loadSVG( const QByteArray &svg )
     QApplication::restoreOverrideCursor();
 }
 
-void CMainWindow::slotSVGRendered( const QByteArray &svg )
+void CMainWindow::slotSVGRendered( const QString &/*tex*/, const QByteArray &svg )
 {
     loadSVG( svg );
 }

@@ -15,6 +15,7 @@
 #include <QWebEngineUrlScheme>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
+#include <QDirIterator>
 
 Q_LOGGING_CATEGORY( T42Qt6MathJax, "Towel42.Qt6MathJax", QtMsgType::QtInfoMsg )
 Q_LOGGING_CATEGORY( T42Qt6MathJaxDebug, "Towel42.Qt6MathJax.Debug", QtMsgType::QtDebugMsg )
@@ -46,9 +47,26 @@ namespace NTowel42
             }
         }
 
+        void dumpQRC()
+        {
+            if ( !T42Qt6MathJaxQRC().isDebugEnabled() )
+                return;
+
+            QDirIterator ii( ":", QDirIterator::Subdirectories );
+            while ( ii.hasNext() )
+            {
+                // Advance the iterator to the next entry and print its path.
+                auto fileName = ii.next();
+                auto size = QFileInfo( fileName ).size();
+                qCDebug( T42Qt6MathJaxQRC ).noquote().nospace() << ii.next() << " " << size;
+            }
+        }
+
         CQt6MathJax::CQt6MathJax( NTowel42::CQt6MathJax *parent ) :
             QObject( parent )
         {
+            dumpQRC();
+
             QWebEngineUrlScheme qrcScheme( QByteArrayLiteral( "qrc" ) );
             qrcScheme.setFlags( QWebEngineUrlScheme::FetchApiAllowed );
             QWebEngineUrlScheme::registerScheme( qrcScheme );
@@ -167,7 +185,7 @@ namespace NTowel42
             auto cachedValue = beenCreated( texCode );
             if ( cachedValue.has_value() )
             {
-                emit sigSVGRendered( cachedValue.value() );
+                emit sigSVGRendered( texCode, cachedValue.value() );
                 if ( postRenderFunction )
                 {
                     postRenderFunction( cachedValue.value() );
@@ -180,7 +198,7 @@ namespace NTowel42
             bool rendered = false;
             if ( postRenderFunction )
             {
-                auto lambda = [ =, &rendered ]( const QByteArray &svg )
+                auto lambda = [ =, &rendered ]( const QString & /*tex*/, const QByteArray &svg )
                 {
                     rendered = true;
                     postRenderFunction( svg );
@@ -345,7 +363,8 @@ namespace NTowel42
                 qCInfo( T42Qt6MathJaxDebug ).noquote().nospace() << "SVG:" << svg.value();
                 fSVGCache[ fQueue.front().fOrig ] = svg.value();
                 fSVGCache[ fQueue.front().fClean ] = svg.value();
-                emit sigSVGRendered( svg.value() );
+                emit sigSVGRendered( fQueue.front().fOrig, svg.value() );
+                emit sigSVGRendered( fQueue.front().fClean, svg.value() );
             }
             else
             {
