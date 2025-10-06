@@ -20,6 +20,10 @@ CMainWindow::CMainWindow( QWidget *parent ) :
     fEngine = new NTowel42::CQt6MathJax;
 
     fImpl->setupUi( this );
+
+    fImpl->svgWidget->renderer()->setAspectRatioMode( Qt::AspectRatioMode::KeepAspectRatio );
+
+
     fImpl->lineEdit->setText( R"(x = {-b \pm \sqrt{b^2-4ac} \over 2a})" );
     fImpl->webEngineViewLayout->addWidget( fEngine->webEngineViewWidget() );
     connect( fImpl->lineEdit, &QLineEdit::returnPressed, fImpl->asyncRender, &QPushButton::animateClick );
