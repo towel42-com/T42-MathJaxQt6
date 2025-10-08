@@ -1,7 +1,7 @@
 cmake_minimum_required( VERSION 3.31 )
 project( T42Qt6MathJax )
 
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui WebEngineWidgets )
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui WebEngineWidgets SvgWidgets )
 
 include( include.cmake )
 include( ${CMAKE_CURRENT_SOURCE_DIR}/../T42-CMakeUtils/QtProject.cmake )

@@ -16,6 +16,8 @@
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 #include <QDirIterator>
+#include <QSvgWidget>
+#include <QSvgRenderer>
 
 Q_LOGGING_CATEGORY( T42Qt6MathJax, "Towel42.Qt6MathJax", QtMsgType::QtInfoMsg )
 Q_LOGGING_CATEGORY( T42Qt6MathJaxDebug, "Towel42.Qt6MathJax.Debug", QtMsgType::QtDebugMsg )
@@ -202,7 +204,7 @@ namespace NTowel42
             auto cleanedCode = cleanupCode( texCode );
             for ( auto &&ii = fQueue.begin(); ii != fQueue.end(); ++ii )
             {
-                if ( ( (*ii).fOrig == texCode ) && ( (*ii).fClean == cleanedCode ) )
+                if ( ( ( *ii ).fOrig == texCode ) && ( ( *ii ).fClean == cleanedCode ) )
                 {
                     if ( ii == fQueue.begin() )   // currently being processed
                     {
@@ -523,5 +525,51 @@ namespace NTowel42
     void CQt6MathJax::initResources()
     {
         Q_INIT_RESOURCE( Qt6MathJax );
+    }
+
+    double numFormulas( const QString &tex )
+    {
+        auto innerRegex = QRegularExpression( QString( R"__(\\newline)__" ) );
+        auto regex = QRegularExpression( QString( R"__((\\newline)+)__" ) );
+
+        auto ii = regex.globalMatch( tex );
+        double retVal = 1.0;
+        while ( ii.hasNext() )
+        {
+            retVal += 1.0;
+            QRegularExpressionMatch match = ii.next();
+
+            int num = 0;
+            auto jj = innerRegex.globalMatch( match.captured() );
+            while ( jj.hasNext() )
+            {
+                jj.next();
+                num++;
+            }
+            retVal += ( ( num - 1 ) * 0.5 );
+            if ( match.capturedEnd() == tex.length() )
+                retVal -= 1;
+        }
+        return retVal;
+    }
+
+    void updateSVGSize( QSvgWidget *svgWidget, const QString &formula, int maxWidth, int pixelsPerLine )
+    {
+        if ( !svgWidget )
+            return;
+
+        if ( !svgWidget->isVisible() || !svgWidget->renderer()->isValid() )
+            return;
+
+        if ( svgWidget->renderer()->aspectRatioMode() != Qt::AspectRatioMode::KeepAspectRatio )
+            svgWidget->renderer()->setAspectRatioMode( Qt::AspectRatioMode::KeepAspectRatio );
+
+        auto numLines = numFormulas( formula );
+        auto maxHeight = pixelsPerLine * numLines;
+
+        auto maxSize = QSize( maxWidth, maxHeight );
+        auto sz = svgWidget->renderer()->defaultSize().scaled( maxSize, Qt::KeepAspectRatio );
+
+        svgWidget->setMinimumSize( sz );
     }
 }

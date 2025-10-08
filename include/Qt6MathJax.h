@@ -7,6 +7,7 @@
 #include <QLoggingCategory>
 
 class QWebEngineView;
+class QSvgWidget;
 
 T42QT6MATHJAX_EXPORT Q_DECLARE_LOGGING_CATEGORY( T42Qt6MathJax );
 T42QT6MATHJAX_EXPORT Q_DECLARE_LOGGING_CATEGORY( T42Qt6MathJaxConsole );
@@ -56,6 +57,10 @@ namespace NTowel42
     private:
         NPrivate::CQt6MathJax *fImpl{ nullptr };
     };
+
+    T42QT6MATHJAX_EXPORT double numFormulas( const QString &tex );
+
+    T42QT6MATHJAX_EXPORT void updateSVGSize( QSvgWidget *svgWidget, const QString & formula, int maxWidth, int pixelsPerLine = 200 );
 }
 
 #endif
