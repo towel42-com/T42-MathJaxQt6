@@ -35,7 +35,7 @@ namespace NTowel42
 
         // detect whether a string has already been compiled in the past (i.e., is in cache):
         bool beenCreated( const QString &texCode ) const;
-        void clearCache( const QString &texCode ); // removes the texCode from the cache
+        void clearCache( const QString &texCode );   // removes the texCode from the cache
 
         QString errorMessage() const;
         bool hasError() const;
@@ -52,7 +52,7 @@ namespace NTowel42
     Q_SIGNALS:
         void sigEngineReady( bool aOK );
         void sigErrorMessage( const QString &msg );
-        void sigSVGRendered( const QString & tex, const QByteArray &svg );
+        void sigSVGRendered( const QString &tex, const QByteArray &svg );
 
     private:
         NPrivate::CQt6MathJax *fImpl{ nullptr };
@@ -60,7 +60,7 @@ namespace NTowel42
 
     T42QT6MATHJAX_EXPORT double numFormulas( const QString &tex );
 
-    T42QT6MATHJAX_EXPORT void updateSVGSize( QSvgWidget *svgWidget, const QString & formula, int maxWidth, int pixelsPerLine = 200 );
+    T42QT6MATHJAX_EXPORT void updateSVGSize( QSvgWidget *svgWidget, const QString &formula, int maxWidth, bool limitParentHeight, int maxPixelHeightPerFormula = 200 );
 }
 
 #endif

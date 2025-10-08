@@ -92,7 +92,7 @@ void CMainWindow::loadSVG( const QByteArray &svg )
 
 void CMainWindow::updateSVGSize()
 {
-    NTowel42::updateSVGSize( fImpl->svgWidget, fImpl->lineEdit->text(), fImpl->svgWidget->parentWidget()->width() * 0.9, fImpl->pixelsPerFormula->value() );
+    NTowel42::updateSVGSize( fImpl->svgWidget, fImpl->lineEdit->text(), fImpl->svgWidget->parentWidget()->width() * 0.9, true, fImpl->pixelsPerFormula->value() );
 }
 
 void CMainWindow::slotSVGRendered( const QString & /*tex*/, const QByteArray &svg )

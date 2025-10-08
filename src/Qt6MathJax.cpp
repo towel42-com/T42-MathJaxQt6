@@ -19,6 +19,8 @@
 #include <QSvgWidget>
 #include <QSvgRenderer>
 
+#include <algorithm>
+
 Q_LOGGING_CATEGORY( T42Qt6MathJax, "Towel42.Qt6MathJax", QtMsgType::QtInfoMsg )
 Q_LOGGING_CATEGORY( T42Qt6MathJaxDebug, "Towel42.Qt6MathJax.Debug", QtMsgType::QtDebugMsg )
 Q_LOGGING_CATEGORY( T42Qt6MathJaxConsole, "Towel42.Qt6MathJax.Console", QtMsgType::QtInfoMsg );
@@ -553,7 +555,7 @@ namespace NTowel42
         return retVal;
     }
 
-    void updateSVGSize( QSvgWidget *svgWidget, const QString &formula, int maxWidth, int pixelsPerLine )
+    void updateSVGSize( QSvgWidget *svgWidget, const QString &formula, int maxWidth, bool limitParentHeight, int maxPixelHeightPerFormula /*=200*/ )
     {
         if ( !svgWidget )
             return;
@@ -564,12 +566,19 @@ namespace NTowel42
         if ( svgWidget->renderer()->aspectRatioMode() != Qt::AspectRatioMode::KeepAspectRatio )
             svgWidget->renderer()->setAspectRatioMode( Qt::AspectRatioMode::KeepAspectRatio );
 
-        auto numLines = numFormulas( formula );
-        auto maxHeight = pixelsPerLine * numLines;
+        auto maxHeight = maxPixelHeightPerFormula * numFormulas( formula );
 
         auto maxSize = QSize( maxWidth, maxHeight );
         auto sz = svgWidget->renderer()->defaultSize().scaled( maxSize, Qt::KeepAspectRatio );
 
         svgWidget->setMinimumSize( sz );
+        svgWidget->setMaximumHeight( sz.height() );
+
+        if ( limitParentHeight && svgWidget->parentWidget() )
+        {
+            auto buffer = std::min( 30, std::min( static_cast< int >( svgWidget->maximumHeight() * 0.5 ), maxPixelHeightPerFormula ) );
+            auto maxParentHeight = sz.height() + buffer;
+            svgWidget->parentWidget()->setMaximumHeight( maxParentHeight );
+        }
     }
 }
