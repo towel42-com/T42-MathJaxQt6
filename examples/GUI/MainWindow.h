@@ -31,6 +31,7 @@ private slots:
 
 private:
     void loadSVG( const QByteArray &svg );
+    void updateSVGSize();
 
     void slotErrorMessage( const QString &msg );
     void slotEnableInput();

@@ -21,9 +21,6 @@ CMainWindow::CMainWindow( QWidget *parent ) :
 
     fImpl->setupUi( this );
 
-    fImpl->svgWidget->renderer()->setAspectRatioMode( Qt::AspectRatioMode::KeepAspectRatio );
-
-
     fImpl->lineEdit->setText( R"(x = {-b \pm \sqrt{b^2-4ac} \over 2a})" );
     fImpl->webEngineViewLayout->addWidget( fEngine->webEngineViewWidget() );
     connect( fImpl->lineEdit, &QLineEdit::returnPressed, fImpl->asyncRender, &QPushButton::animateClick );
@@ -45,6 +42,7 @@ CMainWindow::CMainWindow( QWidget *parent ) :
     connect( fEngine, &NTowel42::CQt6MathJax::sigEngineReady, this, &CMainWindow::slotEngineReady );
     connect( fEngine, &NTowel42::CQt6MathJax::sigErrorMessage, this, &CMainWindow::slotErrorMessage );
     connect( fEngine, &NTowel42::CQt6MathJax::sigSVGRendered, this, &CMainWindow::slotSVGRendered );
+    connect( fImpl->pixelsPerFormula, &QSpinBox::valueChanged, [=]() { updateSVGSize(); } );
 }
 
 CMainWindow::~CMainWindow()
@@ -87,11 +85,14 @@ void CMainWindow::loadSVG( const QByteArray &svg )
     }
     else
     {
-        auto sz = fImpl->svgWidget->sizeHint().scaled( QSize( 200, 0 ), Qt::KeepAspectRatioByExpanding );
-        fImpl->svgWidget->setMinimumSize( sz );
-        fImpl->svgWidget->setMaximumSize( sz );
+        updateSVGSize();
     }
     QApplication::restoreOverrideCursor();
+}
+
+void CMainWindow::updateSVGSize()
+{
+    NTowel42::updateSVGSize( fImpl->svgWidget, fImpl->lineEdit->text(), fImpl->svgWidget->parentWidget()->width() * 0.9, fImpl->pixelsPerFormula->value() );
 }
 
 void CMainWindow::slotSVGRendered( const QString & /*tex*/, const QByteArray &svg )
