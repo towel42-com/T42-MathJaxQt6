@@ -367,7 +367,7 @@ namespace NTowel42
                     }
                     else
                     {
-                        auto keyPos = byteArray.indexOf( QRegularExpression( R"([\s])" ) );
+                        auto keyPos = byteArray.indexOf( QRegularExpression( R"__([\s])__" ) );
                         auto key = byteArray.mid( 1, keyPos - 1 ).toString();
                         keys.push_back( key );
                         if ( !retVal.isEmpty() )

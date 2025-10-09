@@ -21,7 +21,7 @@ CMainWindow::CMainWindow( QWidget *parent ) :
 
     fImpl->setupUi( this );
 
-    fImpl->lineEdit->setText( R"(x = {-b \pm \sqrt{b^2-4ac} \over 2a})" );
+    fImpl->lineEdit->setText( R"__(x = {-b \pm \sqrt{b^2-4ac} \over 2a})__" );
     fImpl->webEngineViewLayout->addWidget( fEngine->webEngineViewWidget() );
     connect( fImpl->lineEdit, &QLineEdit::returnPressed, fImpl->asyncRender, &QPushButton::animateClick );
     connect( fImpl->lineEdit, &QLineEdit::textChanged, this, &CMainWindow::slotEnableInput );
