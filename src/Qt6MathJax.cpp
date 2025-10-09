@@ -576,7 +576,7 @@ namespace NTowel42
 
         if ( limitParentHeight && svgWidget->parentWidget() )
         {
-            auto buffer = std::min( 30, std::min( static_cast< int >( svgWidget->maximumHeight() * 0.5 ), maxPixelHeightPerFormula ) );
+            auto buffer = std::max( 30, std::min( static_cast< int >( svgWidget->maximumHeight() * 0.5 ), maxPixelHeightPerFormula ) );
             auto maxParentHeight = sz.height() + buffer;
             svgWidget->parentWidget()->setMaximumHeight( maxParentHeight );
         }
