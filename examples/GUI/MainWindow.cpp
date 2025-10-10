@@ -21,6 +21,10 @@ CMainWindow::CMainWindow( QWidget *parent ) :
 
     fImpl->setupUi( this );
 
+    fImpl->mathJaxWidget->setEngine( fEngine );
+    fImpl->mathJaxWidget->slotSetPixelsPerFormula( fImpl->pixelsPerFormula->value() );
+    connect( fImpl->mathJaxWidget, &NTowel42::CMathJaxWidget::sigErrorMessage, this, &CMainWindow::slotErrorMessage );
+
     fImpl->lineEdit->setText( R"__(x = {-b \pm \sqrt{b^2-4ac} \over 2a})__" );
     fImpl->webEngineViewLayout->addWidget( fEngine->webEngineViewWidget() );
     connect( fImpl->lineEdit, &QLineEdit::returnPressed, fImpl->asyncRender, &QPushButton::animateClick );
@@ -30,8 +34,7 @@ CMainWindow::CMainWindow( QWidget *parent ) :
         [ = ]()
         {
             clear();
-            QApplication::setOverrideCursor( Qt::WaitCursor );
-            fEngine->renderSVG( fImpl->lineEdit->text() );
+            fImpl->mathJaxWidget->setFormula( fImpl->lineEdit->text() );
         } );
     connect( fImpl->syncRender, &QPushButton::clicked, this, &CMainWindow::slotSyncRender );
 
@@ -40,9 +43,7 @@ CMainWindow::CMainWindow( QWidget *parent ) :
     fImpl->syncRender->setEnabled( false );
 
     connect( fEngine, &NTowel42::CQt6MathJax::sigEngineReady, this, &CMainWindow::slotEngineReady );
-    connect( fEngine, &NTowel42::CQt6MathJax::sigErrorMessage, this, &CMainWindow::slotErrorMessage );
-    connect( fEngine, &NTowel42::CQt6MathJax::sigSVGRendered, this, &CMainWindow::slotSVGRendered );
-    connect( fImpl->pixelsPerFormula, &QSpinBox::valueChanged, [=]() { updateSVGSize(); } );
+    connect( fImpl->pixelsPerFormula, &QSpinBox::valueChanged, fImpl->mathJaxWidget, &NTowel42::CMathJaxWidget::slotSetPixelsPerFormula );
 }
 
 CMainWindow::~CMainWindow()
@@ -70,51 +71,11 @@ void CMainWindow::slotEnableInput()
 void CMainWindow::clear()
 {
     fImpl->plainTextEdit->clear();
-    fImpl->svgWidget->load( QString() );
-}
-
-void CMainWindow::loadSVG( const QByteArray &svg )
-{
-    fImpl->plainTextEdit->setPlainText( svg );
-
-    fImpl->svgWidget->load( svg );
-    if ( !fImpl->svgWidget->renderer()->isValid() )
-    {
-        slotErrorMessage( tr( "Could not load the SVG file" ) );
-        fEngine->clearCache( fImpl->lineEdit->text() );
-    }
-    else
-    {
-        updateSVGSize();
-    }
-    QApplication::restoreOverrideCursor();
-}
-
-void CMainWindow::updateSVGSize()
-{
-    NTowel42::updateSVGSize( fImpl->svgWidget, fImpl->lineEdit->text(), fImpl->svgWidget->parentWidget()->width() * 0.9, true, fImpl->pixelsPerFormula->value() );
-}
-
-void CMainWindow::slotSVGRendered( const QString & /*tex*/, const QByteArray &svg )
-{
-    loadSVG( svg );
+    fImpl->mathJaxWidget->clear();
 }
 
 void CMainWindow::slotSyncRender()
 {
     clear();
-    QApplication::setOverrideCursor( Qt::WaitCursor );
-    QByteArray svgCode;
-    fEngine->renderSVG(
-        fImpl->lineEdit->text(),   //
-        [ = ]( const std::optional< QByteArray > &svg )   //
-        {
-            if ( !svg.has_value() )
-            {
-                QMessageBox::critical( this, tr( "Error in MathJax Engine" ), fEngine->errorMessage() );
-                return;
-            }
-
-            loadSVG( svg.value() );
-        } );
+    fImpl->mathJaxWidget->setFormulaAndWait( fImpl->lineEdit->text() );
 }

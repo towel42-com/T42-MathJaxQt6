@@ -22,11 +22,13 @@
 
 set(qtproject_SRCS
     Qt6MathJax.cpp
+    MathJaxWidget.cpp
 )
 
 set(qtproject_H
     ../include/Qt6MathJax.h
     ../include/private/Qt6MathJax_private.h
+    ../include/MathJaxWidget.h
 )
 
 set(project_H
@@ -34,6 +36,7 @@ set(project_H
 )
 
 set(qtproject_UIS
+    MathJaxWidget.ui
 )
 
 set(qtproject_QRC
