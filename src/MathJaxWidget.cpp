@@ -6,6 +6,8 @@
 
 namespace NTowel42
 {
+    std::unordered_map< QString, QByteArray > CMathJaxWidget::sFormulaToSVGMap;
+
     CMathJaxWidget::CMathJaxWidget( QWidget *parent ) :
         QWidget( parent ),
         fImpl( new Ui::CMathJaxWidget ),
@@ -22,11 +24,32 @@ namespace NTowel42
     void CMathJaxWidget::clear()
     {
         fImpl->svgWidget->load( QString() );
-        fImpl->frame->setVisible( false );
+        setVisible( false );
+    }
+
+    bool CMathJaxWidget::isFormula( const std::optional< QString > &formula ) const
+    {
+        if ( !formula.has_value() )
+        {
+            return !fFormula.has_value();
+        }
+
+        if ( !fFormula.has_value() )
+        {
+            return !formula.has_value();
+        }
+
+        return fFormula.value() == formula.value();
     }
 
     void CMathJaxWidget::loadSVG( const QByteArray &svg )
     {
+        if ( controllersHaveFormula( fFormula ) )
+        {
+            setVisible( false );
+            return;
+        }
+
         fImpl->svgWidget->load( svg );
         if ( !fImpl->svgWidget->renderer()->isValid() )
         {
@@ -34,19 +57,22 @@ namespace NTowel42
         }
         else
         {
-            fImpl->frame->setVisible( true );
+            setVisible( true );
             updateSVGSize();
         }
     }
 
     void CMathJaxWidget::updateSVGSize()
     {
-        NTowel42::updateSVGSize( fImpl->svgWidget, fFormula, width() * 0.9, true, fPixelsPerFormula );
+        if ( !fFormula.has_value() )
+            return;
+
+        NTowel42::updateSVGSize( fImpl->svgWidget, fFormula.value(), width() * 0.9, true, fPixelsPerFormula );
     }
 
-    void CMathJaxWidget::slotSVGRendered( const QString &tex, const QByteArray &svg )
+    void CMathJaxWidget::slotSVGRendered( const QString &formula, const QByteArray &svg )
     {
-        if ( tex != fFormula )
+        if ( !isFormula( formula ) )
             return;
         loadSVG( svg );
     }
@@ -64,19 +90,68 @@ namespace NTowel42
         connect( fEngine, &NTowel42::CQt6MathJax::sigErrorMessage, this, &CMathJaxWidget::sigErrorMessage );
     }
 
-    void CMathJaxWidget::setFormula( const QString &formula )
+    std::optional< QByteArray > CMathJaxWidget::svgForFormula( const QString &formula ) const
     {
+        auto pos = sFormulaToSVGMap.find( formula );
+        if ( pos != sFormulaToSVGMap.end() )
+        {
+            return ( *pos ).second;
+        };
+        return {};
+    }
+
+    void CMathJaxWidget::setSubordinateTo( const std::list< CMathJaxWidget * > &controllingWidgets )
+    {
+        fControllingWidgets = controllingWidgets;
+    }
+
+    bool CMathJaxWidget::controllersHaveFormula( const std::optional< QString > &formula ) const
+    {
+        for(auto && ii : fControllingWidgets)
+        {
+            if ( ii->isFormula( formula ) )
+                return true;
+        }
+        return false;
+    }
+        
+    void CMathJaxWidget::setFormula( const std::optional< QString > &formula )
+    {
+        Q_ASSERT( fEngine );
+
+        if ( isFormula( formula ) )
+            return;
+
         fFormula = formula;
-        fEngine->renderSVG( formula );
+        if ( !fFormula.has_value() || fFormula.value().isEmpty() )
+            clear();
+        else
+        {
+            auto svg = svgForFormula( formula.value() );
+            if ( svg.has_value() )
+                loadSVG( svg.value() );
+            else
+            {
+                setVisible( false );
+                fEngine->renderSVG( fFormula.value() );
+            }
+        }
     }
 
     void CMathJaxWidget::setFormulaAndWait( const QString &formula )
     {
+        Q_ASSERT( fEngine );
+
+        if ( formula.isEmpty() )
+            clear();
+        else if ( isFormula( formula ) )
+            return;
+
         fFormula = formula;
         QApplication::setOverrideCursor( Qt::WaitCursor );
         QByteArray svgCode;
         fEngine->renderSVG(
-            fFormula,   //
+            fFormula.value(),   //
             [ = ]( const std::optional< QByteArray > &svg )   //
             {
                 if ( !svg.has_value() )

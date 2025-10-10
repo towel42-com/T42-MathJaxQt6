@@ -396,7 +396,8 @@ namespace NTowel42
                 fSVGCache[ fQueue.front().fOrig ] = svg.value();
                 fSVGCache[ fQueue.front().fClean ] = svg.value();
                 emit sigSVGRendered( fQueue.front().fOrig, svg.value() );
-                emit sigSVGRendered( fQueue.front().fClean, svg.value() );
+                if ( fQueue.front().fOrig != fQueue.front().fClean )
+                    emit sigSVGRendered( fQueue.front().fClean, svg.value() );
             }
             else
             {

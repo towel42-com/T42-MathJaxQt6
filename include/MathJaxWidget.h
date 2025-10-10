@@ -1,10 +1,13 @@
 #ifndef MATHJAXWIDGET_H
 #define MATHJAXWIDGET_H
 
-#include "include/T42Qt6MathJaxExport.h"
+#include "T42-Qt6MathJax/include/T42Qt6MathJaxExport.h"
 
 #include <QWidget>
+#include <QByteArray>
+#include <optional>
 #include <memory>
+#include <unordered_map>
 
 namespace NTowel42
 {
@@ -24,10 +27,16 @@ namespace NTowel42
         ~CMathJaxWidget();
 
         void setEngine( NTowel42::CQt6MathJax *engine );
-        void setFormula( const QString &formula );
+        void setFormula( const std::optional< QString > &formula );
         void setFormulaAndWait( const QString &formula );
         void clear();
 
+        bool isFormula( const std::optional< QString > &formula ) const;
+        void updateSVGSize();
+
+        std::optional< QByteArray > svgForFormula( const QString &formula ) const;
+
+        void setSubordinateTo( const std::list< CMathJaxWidget * > &controllingWidgets );
     Q_SIGNALS:
         void sigErrorMessage( const QString &errorMsg );
 
@@ -38,14 +47,18 @@ namespace NTowel42
         void slotSVGRendered( const QString &tex, const QByteArray &svg );
 
     private:
+        bool controllersHaveFormula( const std::optional< QString > &formula ) const;
         void loadSVG( const QByteArray &svg );
-        void updateSVGSize();
 
     private:
-        QString fFormula;
+        std::optional< QString > fFormula;
         int fPixelsPerFormula{ 200 };
-        std::unique_ptr< Ui::CMathJaxWidget > fImpl{};
+        std::list< CMathJaxWidget * > fControllingWidgets;
+
         NTowel42::CQt6MathJax *fEngine{ nullptr };
+        std::unique_ptr< Ui::CMathJaxWidget > fImpl{};
+
+        static std::unordered_map< QString, QByteArray > sFormulaToSVGMap;
     };
 }
 #endif   // MAINWINDOW_H
