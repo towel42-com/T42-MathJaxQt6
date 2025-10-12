@@ -36,6 +36,7 @@ namespace NTowel42
 
         std::optional< QByteArray > svgForFormula( const QString &formula ) const;
 
+        void setSubordinateTo( CMathJaxWidget *controllingWidget );
         void setSubordinateTo( const std::list< CMathJaxWidget * > &controllingWidgets );
     Q_SIGNALS:
         void sigErrorMessage( const QString &errorMsg );
