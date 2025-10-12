@@ -4,7 +4,6 @@
 #include <QDesktopServices>
 #include <QEventLoop>
 #include <QMetaEnum>
-#include <QRegularExpression>
 #include <QTimer>
 #include <QUrl>
 #include <QWebChannel>
@@ -528,58 +527,5 @@ namespace NTowel42
     void CQt6MathJax::initResources()
     {
         Q_INIT_RESOURCE( Qt6MathJax );
-    }
-
-    double numFormulas( const QString &tex )
-    {
-        auto innerRegex = QRegularExpression( QString( R"__(\\newline)__" ) );
-        auto regex = QRegularExpression( QString( R"__((\\newline)+)__" ) );
-
-        auto ii = regex.globalMatch( tex );
-        double retVal = 1.0;
-        while ( ii.hasNext() )
-        {
-            retVal += 1.0;
-            QRegularExpressionMatch match = ii.next();
-
-            int num = 0;
-            auto jj = innerRegex.globalMatch( match.captured() );
-            while ( jj.hasNext() )
-            {
-                jj.next();
-                num++;
-            }
-            retVal += ( ( num - 1 ) * 0.5 );
-            if ( match.capturedEnd() == tex.length() )
-                retVal -= 1;
-        }
-        return retVal;
-    }
-
-    void updateSVGSize( QSvgWidget *svgWidget, const QString &formula, int maxWidth, bool limitParentHeight, int maxPixelHeightPerFormula /*=200*/ )
-    {
-        if ( !svgWidget )
-            return;
-
-        if ( !svgWidget->isVisible() || !svgWidget->renderer()->isValid() )
-            return;
-
-        if ( svgWidget->renderer()->aspectRatioMode() != Qt::AspectRatioMode::KeepAspectRatio )
-            svgWidget->renderer()->setAspectRatioMode( Qt::AspectRatioMode::KeepAspectRatio );
-
-        auto maxHeight = maxPixelHeightPerFormula * numFormulas( formula );
-
-        auto maxSize = QSize( maxWidth, maxHeight );
-        auto sz = svgWidget->renderer()->defaultSize().scaled( maxSize, Qt::KeepAspectRatio );
-
-        svgWidget->setMinimumSize( sz );
-        svgWidget->setMaximumHeight( sz.height() );
-
-        if ( limitParentHeight && svgWidget->parentWidget() )
-        {
-            auto buffer = std::max( 30, std::min( static_cast< int >( svgWidget->maximumHeight() * 0.5 ), maxPixelHeightPerFormula ) );
-            auto maxParentHeight = sz.height() + buffer;
-            svgWidget->parentWidget()->setMaximumHeight( maxParentHeight );
-        }
     }
 }

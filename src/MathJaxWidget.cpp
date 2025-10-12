@@ -3,6 +3,7 @@
 #include "ui_MathJaxWidget.h"
 
 #include <QSvgRenderer>
+#include <QRegularExpression>
 
 namespace NTowel42
 {
@@ -62,12 +63,61 @@ namespace NTowel42
         }
     }
 
+    double CMathJaxWidget::numFormulas( const QString &tex )
+    {
+        auto innerRegex = QRegularExpression( QString( R"__(\\newline)__" ) );
+        auto regex = QRegularExpression( QString( R"__((\\newline)+)__" ) );
+
+        auto ii = regex.globalMatch( tex );
+        double retVal = 1.0;
+        while ( ii.hasNext() )
+        {
+            retVal += 1.0;
+            QRegularExpressionMatch match = ii.next();
+
+            int num = 0;
+            auto jj = innerRegex.globalMatch( match.captured() );
+            while ( jj.hasNext() )
+            {
+                jj.next();
+                num++;
+            }
+            retVal += ( ( num - 1 ) * 0.5 );
+            if ( match.capturedEnd() == tex.length() )
+                retVal -= 1;
+        }
+        return retVal;
+    }
+
     void CMathJaxWidget::updateSVGSize()
     {
         if ( !fFormula.has_value() )
             return;
 
-        NTowel42::updateSVGSize( fImpl->svgWidget, fFormula.value(), width() * 0.9, true, fPixelsPerFormula );
+        if ( !fImpl->svgWidget->isVisible() || !fImpl->svgWidget->renderer()->isValid() )
+            return;
+
+        if ( fImpl->svgWidget->renderer()->aspectRatioMode() != Qt::AspectRatioMode::KeepAspectRatio )
+            fImpl->svgWidget->renderer()->setAspectRatioMode( Qt::AspectRatioMode::KeepAspectRatio );
+
+        auto maxHeight = fPixelHeightPerFormula * numFormulas( fFormula.value() );
+
+        auto maxSize = QSize( width(), maxHeight );
+        auto defaultSize = fImpl->svgWidget->renderer()->defaultSize();
+
+        QSize sz;
+        double multiplier = 1.0;
+        do
+        {
+            sz = defaultSize.scaled( maxSize * multiplier, Qt::KeepAspectRatio );
+            multiplier += 0.1;
+        }
+        while ( sz.height() < ( 0.3 * fPixelHeightPerFormula ) );
+
+        auto buffer = std::max( 30, std::min( static_cast< int >( sz.height() * 0.25 ), fPixelHeightPerFormula ) );
+        auto maxParentHeight = sz.height() + buffer;
+        setMaximumHeight( maxParentHeight );
+        setMinimumHeight( sz.height() );
     }
 
     void CMathJaxWidget::slotSVGRendered( const QString &formula, const QByteArray &svg )
@@ -79,7 +129,7 @@ namespace NTowel42
 
     void CMathJaxWidget::slotSetPixelsPerFormula( int pixelsPerFormula )
     {
-        fPixelsPerFormula = pixelsPerFormula;
+        fPixelHeightPerFormula = pixelsPerFormula;
         updateSVGSize();
     }
 
