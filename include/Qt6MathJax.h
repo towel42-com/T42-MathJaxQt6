@@ -57,10 +57,6 @@ namespace NTowel42
     private:
         NPrivate::CQt6MathJax *fImpl{ nullptr };
     };
-
-    T42QT6MATHJAX_EXPORT double numFormulas( const QString &tex );
-
-    T42QT6MATHJAX_EXPORT void updateSVGSize( QSvgWidget *svgWidget, const QString &formula, int maxWidth, bool limitParentHeight, int maxPixelHeightPerFormula = 200 );
 }
 
 #endif

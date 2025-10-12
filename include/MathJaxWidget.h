@@ -38,6 +38,9 @@ namespace NTowel42
 
         void setSubordinateTo( CMathJaxWidget *controllingWidget );
         void setSubordinateTo( const std::list< CMathJaxWidget * > &controllingWidgets );
+
+        static double numFormulas( const QString &tex );
+    
     Q_SIGNALS:
         void sigErrorMessage( const QString &errorMsg );
 
@@ -53,7 +56,7 @@ namespace NTowel42
 
     private:
         std::optional< QString > fFormula;
-        int fPixelsPerFormula{ 200 };
+        int fPixelHeightPerFormula{ 200 };
         std::list< CMathJaxWidget * > fControllingWidgets;
 
         NTowel42::CQt6MathJax *fEngine{ nullptr };
