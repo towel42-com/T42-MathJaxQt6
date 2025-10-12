@@ -105,16 +105,21 @@ namespace NTowel42
         fControllingWidgets = controllingWidgets;
     }
 
+    void CMathJaxWidget::setSubordinateTo( CMathJaxWidget *controllingWidget )
+    {
+        setSubordinateTo( std::list< CMathJaxWidget * >( { controllingWidget } ) );
+    }
+
     bool CMathJaxWidget::controllersHaveFormula( const std::optional< QString > &formula ) const
     {
-        for(auto && ii : fControllingWidgets)
+        for ( auto &&ii : fControllingWidgets )
         {
             if ( ii->isFormula( formula ) )
                 return true;
         }
         return false;
     }
-        
+
     void CMathJaxWidget::setFormula( const std::optional< QString > &formula )
     {
         Q_ASSERT( fEngine );
