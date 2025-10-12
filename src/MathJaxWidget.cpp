@@ -207,7 +207,7 @@ namespace NTowel42
         QByteArray svgCode;
         fEngine->renderSVG(
             fFormula.value(),   //
-            [ = ]( const std::optional< QByteArray > &svg )   //
+            [ = ]( const QString & /*tex*/, const std::optional< QByteArray > &svg )   //
             {
                 if ( !svg.has_value() )
                 {

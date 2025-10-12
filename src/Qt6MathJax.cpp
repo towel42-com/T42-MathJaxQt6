@@ -35,6 +35,36 @@ namespace NTowel42
 {
     namespace NPrivate
     {
+        static std::unordered_map< QString, QString > gCodeCache;
+        QString cleanupCode( QString texCode )
+        {
+            auto pos = gCodeCache.find( texCode );
+            if ( pos == gCodeCache.end() )
+            {
+                auto origCode = texCode;
+                texCode.replace( "\\", "\\\\" ).replace( "'", "\\'" ).replace( "\n", "\\\n" ).trimmed();
+                gCodeCache[ origCode ] = texCode;
+
+                pos = gCodeCache.find( origCode );
+                Q_ASSERT( pos != gCodeCache.end() );
+            }
+            else
+                texCode = ( *pos ).second;
+            return texCode;
+        }
+
+        SQueuedRequests::SQueuedRequests( const QString &orig ) :
+            fOrig( orig )
+        {
+            fClean = cleanupCode( orig );
+        }
+
+        SQueuedRequests::SQueuedRequests( const QString &orig, const QString &cleaned ) :
+            fOrig( orig ),
+            fClean( cleaned )
+        {
+        }
+
         CWebEnginePage_WConsoleLog::CWebEnginePage_WConsoleLog( QObject *parent /*= nullptr*/ ) :
             QWebEnginePage( parent )
         {
@@ -149,7 +179,7 @@ namespace NTowel42
 
         std::optional< QByteArray > CQt6MathJax::beenCreated( const QString &texCode ) const
         {
-            QString cleanedCode = cleanupCode( texCode );
+            auto cleanedCode = cleanupCode( texCode );
             auto pos = fSVGCache.find( cleanedCode );
             if ( pos == fSVGCache.end() )
                 pos = fSVGCache.find( texCode );
@@ -167,21 +197,15 @@ namespace NTowel42
             fSVGCache.erase( pos );
         }
 
-        QString CQt6MathJax::cleanupCode( QString texCode ) const
+        void CQt6MathJax::addToCache( const QString &texCode, const QByteArray &svg )
         {
-            auto pos = fCodeCache.find( texCode );
-            if ( pos == fCodeCache.end() )
-            {
-                auto origCode = texCode;
-                texCode.replace( "\\", "\\\\" ).replace( "'", "\\'" ).replace( "\n", "\\\n" ).trimmed();
-                fCodeCache[ origCode ] = texCode;
+            addToCache( SQueuedRequests( texCode ), svg );
+        }
 
-                pos = fCodeCache.find( origCode );
-                Q_ASSERT( pos != fCodeCache.end() );
-            }
-            else
-                texCode = ( *pos ).second;
-            return texCode;
+        void CQt6MathJax::addToCache(const SQueuedRequests & request,const QByteArray & svg)
+        {
+            fSVGCache[ request.fClean ] = svg;
+            fSVGCache[ request.fOrig ] = svg;
         }
 
         void CQt6MathJax::renderSVG( const QString &texCode )
@@ -189,7 +213,7 @@ namespace NTowel42
             renderSVG( texCode, {}, {} );
         }
 
-        void CQt6MathJax::renderSVG( const QString &texCode, const std::function< void( const std::optional< QByteArray > &svg ) > &postRenderFunction, const std::function< void( const QString &msg ) > &onErrorMessage )
+        void CQt6MathJax::renderSVG( const QString &texCode, const std::function< void( const QString &tex, const std::optional< QByteArray > &svg ) > &postRenderFunction, const std::function< void( const QString &msg ) > &onErrorMessage )
         {
             auto cachedValue = beenCreated( texCode );
             if ( cachedValue.has_value() )
@@ -197,7 +221,7 @@ namespace NTowel42
                 emit sigSVGRendered( texCode, cachedValue.value() );
                 if ( postRenderFunction )
                 {
-                    postRenderFunction( cachedValue.value() );
+                    postRenderFunction( texCode, cachedValue.value() );
                     parent()->blockSignals( false );
                 }
                 return;
@@ -222,15 +246,15 @@ namespace NTowel42
                 }
             }
 
-            fQueue.push_back( { texCode, cleanupCode( texCode ) } );
+            fQueue.push_back( { texCode } );
 
             bool rendered = false;
             if ( postRenderFunction )
             {
-                auto lambda = [ =, &rendered ]( const QString & /*tex*/, const QByteArray &svg )
+                auto lambda = [ =, &rendered ]( const QString &tex, const QByteArray &svg )
                 {
                     rendered = true;
-                    postRenderFunction( svg );
+                    postRenderFunction( tex, svg );
                     parent()->blockSignals( false );
                 };
                 connect( this, &CQt6MathJax::sigSVGRendered, lambda );
@@ -247,7 +271,7 @@ namespace NTowel42
                 loop.exec();
                 if ( !rendered )
                 {
-                    postRenderFunction( {} );
+                    postRenderFunction( {}, {} );
                     parent()->blockSignals( false );
                 }
             }
@@ -392,8 +416,7 @@ namespace NTowel42
             if ( svg.has_value() )
             {
                 qCDebug( T42Qt6MathJaxDebug ) << "SVG:" << svg.value();
-                fSVGCache[ fQueue.front().fOrig ] = svg.value();
-                fSVGCache[ fQueue.front().fClean ] = svg.value();
+                addToCache( fQueue.front(), svg.value() );
                 emit sigSVGRendered( fQueue.front().fOrig, svg.value() );
                 if ( fQueue.front().fOrig != fQueue.front().fClean )
                     emit sigSVGRendered( fQueue.front().fClean, svg.value() );
@@ -472,7 +495,7 @@ namespace NTowel42
         fImpl->renderSVG( texCode );
     }
 
-    void CQt6MathJax::renderSVG( const QString &texCode, const std::function< void( const std::optional< QByteArray > &svg ) > &function, const std::function< void( const QString &msg ) > &onErrorMessage )
+    void CQt6MathJax::renderSVG( const QString &texCode, const std::function< void( const QString & texCode, const std::optional< QByteArray > &svg ) > &function, const std::function< void( const QString &msg ) > &onErrorMessage )
     {
         blockSignals( true );
         fImpl->renderSVG( texCode, function, onErrorMessage );
@@ -481,6 +504,11 @@ namespace NTowel42
     void CQt6MathJax::slotRenderSVG( const QString &texCode )
     {
         renderSVG( texCode );
+    }
+
+    void CQt6MathJax::addToCache( const QString &texCode, const QByteArray &svg )
+    {
+        fImpl->addToCache( texCode, svg );
     }
 
     bool CQt6MathJax::beenCreated( const QString &texCode ) const

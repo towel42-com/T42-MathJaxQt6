@@ -33,6 +33,15 @@ namespace NTowel42
             virtual void javaScriptConsoleMessage( JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID ) override;
         };
 
+        struct SQueuedRequests
+        {
+            SQueuedRequests( const QString &orig );
+            SQueuedRequests( const QString &orig, const QString &cleaned );
+            
+            QString fOrig;
+            QString fClean;
+        };
+
         class CQt6MathJax : public QObject
         {
             Q_OBJECT
@@ -43,11 +52,13 @@ namespace NTowel42
             ~CQt6MathJax();
 
             void renderSVG( const QString &code );
-            void renderSVG( const QString &texCode, const std::function< void( const std::optional< QByteArray > &svg ) > &function, const std::function< void( const QString &msg ) > &onErrorMessage );
+            void renderSVG( const QString &texCode, const std::function< void( const QString &tex, const std::optional< QByteArray > &svg ) > &function, const std::function< void( const QString &msg ) > &onErrorMessage );
 
             // detect whether a string has already been compiled in the past (i.e., is in cache):
             std::optional< QByteArray > beenCreated( const QString &code ) const;
             void clearCache( const QString &code );
+            void addToCache( const SQueuedRequests &queuedRequest, const QByteArray &svg );
+            void addToCache( const QString &texCode, const QByteArray &svg );
 
             QString errorMessage() const;
             QWebEngineView *webEngineView() const;
@@ -71,8 +82,6 @@ namespace NTowel42
             void setupDebugTracing();
             void setEngineReady( bool aOK );
 
-            QString cleanupCode( QString code ) const;
-
             QWebEngineView *fView{ nullptr };
             QWebEnginePage *page();
 
@@ -81,13 +90,7 @@ namespace NTowel42
             bool fEngineReady{ false };   // false unless the webengine loads the qrc correctly
 
             mutable std::unordered_map< QString, QByteArray > fSVGCache;
-            mutable std::unordered_map< QString, QString > fCodeCache;
 
-            struct SQueuedRequests
-            {
-                QString fOrig;
-                QString fClean;
-            };
             std::list< SQueuedRequests > fQueue;
         };
     }

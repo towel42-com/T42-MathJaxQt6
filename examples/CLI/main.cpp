@@ -137,8 +137,11 @@ int main( int argc, char *argv[] )
     NTowel42::CQt6MathJax engine;
     engine.renderSVG(
         inputTeX,   //
-        [ &engine, outputFile, &retVal ]( const std::optional< QByteArray > &svg )   //
+        [ &engine, outputFile, &retVal, inputTeX ]( const QString &tex, const std::optional< QByteArray > &svg )   //
         {
+            if ( tex != inputTeX )
+                return;
+            
             if ( !svg.has_value() )
             {
                 std::cerr << "ERROR: Problem rendering TeX: see previous errors.\n";
