@@ -22,7 +22,7 @@ namespace NTowel42
 
     void CMathJaxWidget::clear()
     {
-        fImpl->svgWidget->load( QString() );
+        fImpl->svgWidget->load( QByteArray() );
         setVisible( false );
     }
 
