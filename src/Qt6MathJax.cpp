@@ -383,8 +383,6 @@ namespace NTowel42
                     if ( !keys.empty() && ( byteArray.length() > 1 ) && ( byteArray[ 1 ] == '/' ) )
                     {
                         auto tmp = QStringView( byteArray ).slice( 2, keys.back().length() );
-                        if ( tmp != keys.back() )
-                            int xyz = 0;
 
                         Q_ASSERT( tmp == keys.back() );
 
