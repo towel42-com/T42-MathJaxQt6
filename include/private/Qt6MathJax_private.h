@@ -54,6 +54,9 @@ namespace NTowel42
             void renderSVG( const QString &code );
             void renderSVG( const QString &texCode, const std::function< void( const QString &tex, const std::optional< QByteArray > &svg ) > &function, const std::function< void( const QString &msg ) > &onErrorMessage );
 
+        public:
+            bool checkQueue( const QString &texCode );
+
             // detect whether a string has already been compiled in the past (i.e., is in cache):
             std::optional< QByteArray > beenCreated( const QString &code ) const;
             void clearCache( const QString &code );

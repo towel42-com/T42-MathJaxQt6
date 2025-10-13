@@ -202,7 +202,7 @@ namespace NTowel42
             addToCache( SQueuedRequests( texCode ), svg );
         }
 
-        void CQt6MathJax::addToCache(const SQueuedRequests & request,const QByteArray & svg)
+        void CQt6MathJax::addToCache( const SQueuedRequests &request, const QByteArray &svg )
         {
             fSVGCache[ request.fClean ] = svg;
             fSVGCache[ request.fOrig ] = svg;
@@ -226,26 +226,8 @@ namespace NTowel42
                 }
                 return;
             }
-            auto cleanedCode = cleanupCode( texCode );
-            for ( auto &&ii = fQueue.begin(); ii != fQueue.end(); ++ii )
-            {
-                if ( ( ( *ii ).fOrig == texCode ) && ( ( *ii ).fClean == cleanedCode ) )
-                {
-                    if ( ii == fQueue.begin() )   // currently being processed
-                    {
-                        qCInfo( T42Qt6MathJax ) << "Formula: '" << cleanedCode << "' already in queue and currently being processed.";
-                    }
-                    else
-                    {
-                        qCInfo( T42Qt6MathJax ) << "Formula: '" << cleanedCode << "' already in queue being moved to the next to be processed.";
-                        auto curr = *ii;
-                        fQueue.erase( ii );
-                        fQueue.insert( std::next( fQueue.begin() ), curr );
-                    }
-                    return;
-                }
-            }
-
+            if ( checkQueue( texCode ) )
+                return;
             fQueue.push_back( { texCode } );
 
             bool rendered = false;
@@ -275,6 +257,30 @@ namespace NTowel42
                     parent()->blockSignals( false );
                 }
             }
+        }
+
+        bool CQt6MathJax::checkQueue( const QString &texCode )
+        {
+            auto cleanedCode = cleanupCode( texCode );
+            for ( auto &&ii = fQueue.begin(); ii != fQueue.end(); ++ii )
+            {
+                if ( ( ( *ii ).fOrig == texCode ) && ( ( *ii ).fClean == cleanedCode ) )
+                {
+                    if ( ii == fQueue.begin() )   // currently being processed
+                    {
+                        qCInfo( T42Qt6MathJax ) << "Formula: '" << cleanedCode << "' already in queue and currently being processed.";
+                    }
+                    else
+                    {
+                        qCInfo( T42Qt6MathJax ) << "Formula: '" << cleanedCode << "' already in queue being moved to the next to be processed.";
+                        auto curr = *ii;
+                        fQueue.erase( ii );
+                        fQueue.insert( std::next( fQueue.begin() ), curr );
+                    }
+                    return true;
+                }
+            }
+            return false;
         }
 
         void CQt6MathJax::slotRenderNextInQueue()
@@ -495,7 +501,7 @@ namespace NTowel42
         fImpl->renderSVG( texCode );
     }
 
-    void CQt6MathJax::renderSVG( const QString &texCode, const std::function< void( const QString & texCode, const std::optional< QByteArray > &svg ) > &function, const std::function< void( const QString &msg ) > &onErrorMessage )
+    void CQt6MathJax::renderSVG( const QString &texCode, const std::function< void( const QString &texCode, const std::optional< QByteArray > &svg ) > &function, const std::function< void( const QString &msg ) > &onErrorMessage )
     {
         blockSignals( true );
         fImpl->renderSVG( texCode, function, onErrorMessage );
