@@ -19,6 +19,7 @@
 #include <QSvgRenderer>
 
 #include <algorithm>
+#include <unordered_map>
 
 Q_LOGGING_CATEGORY( T42Qt6MathJax, "Towel42.Qt6MathJax", QtMsgType::QtInfoMsg )
 Q_LOGGING_CATEGORY( T42Qt6MathJaxDebug, "Towel42.Qt6MathJax.Debug", QtMsgType::QtDebugMsg )
@@ -33,36 +34,33 @@ Q_LOGGING_CATEGORY( T42Qt6MathJaxQRC, "Towel42.Qt6MathJax.QRC", QtMsgType::QtDeb
 
 namespace NTowel42
 {
+    static std::unordered_map< QString, QString > gCodeCache;
+    QString cleanupFormula( QString texCode )
+    {
+        auto pos = gCodeCache.find( texCode );
+        if ( pos == gCodeCache.end() )
+        {
+            auto origCode = texCode;
+            texCode.replace( "\\", "\\\\" ).replace( "'", "\\'" ).replace( "\n", "\\\n" ).trimmed();
+            gCodeCache[ origCode ] = texCode;
+
+            pos = gCodeCache.find( origCode );
+            Q_ASSERT( pos != gCodeCache.end() );
+        }
+        else
+            texCode = ( *pos ).second;
+        return texCode;
+    }
+
     namespace NPrivate
     {
-        static std::unordered_map< QString, QString > gCodeCache;
-        QString cleanupCode( QString texCode )
-        {
-            auto pos = gCodeCache.find( texCode );
-            if ( pos == gCodeCache.end() )
-            {
-                auto origCode = texCode;
-                texCode.replace( "\\", "\\\\" ).replace( "'", "\\'" ).replace( "\n", "\\\n" ).trimmed();
-                gCodeCache[ origCode ] = texCode;
-
-                pos = gCodeCache.find( origCode );
-                Q_ASSERT( pos != gCodeCache.end() );
-            }
-            else
-                texCode = ( *pos ).second;
-            return texCode;
-        }
-
-        SQueuedRequests::SQueuedRequests( const QString &orig ) :
+        SQueuedRequests::SQueuedRequests( const QString &orig, const std::optional< QString > &cleanedTexCode ) :
             fOrig( orig )
         {
-            fClean = cleanupCode( orig );
-        }
-
-        SQueuedRequests::SQueuedRequests( const QString &orig, const QString &cleaned ) :
-            fOrig( orig ),
-            fClean( cleaned )
-        {
+            if ( cleanedTexCode.has_value() && !cleanedTexCode.value().isEmpty() )
+                fClean = cleanedTexCode.value();
+            else
+                fClean = cleanupFormula( orig );
         }
 
         CWebEnginePage_WConsoleLog::CWebEnginePage_WConsoleLog( QObject *parent /*= nullptr*/ ) :
@@ -179,8 +177,8 @@ namespace NTowel42
 
         std::optional< QByteArray > CQt6MathJax::beenCreated( const QString &texCode ) const
         {
-            auto cleanedCode = cleanupCode( texCode );
-            auto pos = fSVGCache.find( cleanedCode );
+            auto cleanedFormula = cleanupFormula( texCode );
+            auto pos = fSVGCache.find( cleanedFormula );
             if ( pos == fSVGCache.end() )
                 pos = fSVGCache.find( texCode );
             if ( pos == fSVGCache.end() )
@@ -190,16 +188,16 @@ namespace NTowel42
 
         void CQt6MathJax::clearCache( const QString &texCode )
         {
-            QString cleanedCode = cleanupCode( texCode );
-            auto pos = fSVGCache.find( cleanedCode );
+            QString cleanedFormula = cleanupFormula( texCode );
+            auto pos = fSVGCache.find( cleanedFormula );
             if ( pos == fSVGCache.end() )
                 return;
             fSVGCache.erase( pos );
         }
 
-        void CQt6MathJax::addToCache( const QString &texCode, const QByteArray &svg )
+        void CQt6MathJax::addToCache( const QString &texCode, const std::optional< QString > &cleanedTexCode, const QByteArray &svg )
         {
-            addToCache( SQueuedRequests( texCode ), svg );
+            addToCache( SQueuedRequests( texCode, cleanedTexCode ), svg );
         }
 
         void CQt6MathJax::addToCache( const SQueuedRequests &request, const QByteArray &svg )
@@ -228,7 +226,7 @@ namespace NTowel42
             }
             if ( checkQueue( texCode ) )
                 return;
-            fQueue.push_back( { texCode } );
+            fQueue.push_back( SQueuedRequests( texCode, {} ) );
 
             bool rendered = false;
             if ( postRenderFunction )
@@ -261,18 +259,18 @@ namespace NTowel42
 
         bool CQt6MathJax::checkQueue( const QString &texCode )
         {
-            auto cleanedCode = cleanupCode( texCode );
+            auto cleanedFormula = cleanupFormula( texCode );
             for ( auto &&ii = fQueue.begin(); ii != fQueue.end(); ++ii )
             {
-                if ( ( ( *ii ).fOrig == texCode ) && ( ( *ii ).fClean == cleanedCode ) )
+                if ( ( ( *ii ).fOrig == texCode ) && ( ( *ii ).fClean == cleanedFormula ) )
                 {
                     if ( ii == fQueue.begin() )   // currently being processed
                     {
-                        qCInfo( T42Qt6MathJax ) << "Formula: '" << cleanedCode << "' already in queue and currently being processed.";
+                        qCInfo( T42Qt6MathJax ) << "Formula: '" << cleanedFormula << "' already in queue and currently being processed.";
                     }
                     else
                     {
-                        qCInfo( T42Qt6MathJax ) << "Formula: '" << cleanedCode << "' already in queue being moved to the next to be processed.";
+                        qCInfo( T42Qt6MathJax ) << "Formula: '" << cleanedFormula << "' already in queue being moved to the next to be processed.";
                         auto curr = *ii;
                         fQueue.erase( ii );
                         fQueue.insert( std::next( fQueue.begin() ), curr );
@@ -308,12 +306,12 @@ namespace NTowel42
 
             fRunning = true;
             fLastError = QString();
-            auto cleanedCode = fQueue.front().fClean;
+            auto cleanedFormula = fQueue.front().fClean;
 
             auto codeToRun = QString(   //
                                  "renderer = new Renderer();"
                                  "renderer.render('%1');" )
-                                 .arg( cleanedCode );
+                                 .arg( cleanedFormula );
             page()->runJavaScript( codeToRun );
         }
 
@@ -512,9 +510,9 @@ namespace NTowel42
         renderSVG( texCode );
     }
 
-    void CQt6MathJax::addToCache( const QString &texCode, const QByteArray &svg )
+    void CQt6MathJax::addToCache( const QString &texCode, const std::optional< QString > &cleanedTexCode, const QByteArray &svg )
     {
-        fImpl->addToCache( texCode, svg );
+        fImpl->addToCache( texCode, cleanedTexCode, svg );
     }
 
     bool CQt6MathJax::beenCreated( const QString &texCode ) const

@@ -35,8 +35,7 @@ namespace NTowel42
 
         struct SQueuedRequests
         {
-            SQueuedRequests( const QString &orig );
-            SQueuedRequests( const QString &orig, const QString &cleaned );
+            SQueuedRequests( const QString &orig, const std::optional< QString > &cleanedTexCode );
             
             QString fOrig;
             QString fClean;
@@ -61,7 +60,7 @@ namespace NTowel42
             std::optional< QByteArray > beenCreated( const QString &code ) const;
             void clearCache( const QString &code );
             void addToCache( const SQueuedRequests &queuedRequest, const QByteArray &svg );
-            void addToCache( const QString &texCode, const QByteArray &svg );
+            void addToCache( const QString &texCode, const std::optional< QString > &cleanedTexCode, const QByteArray &svg );
 
             QString errorMessage() const;
             QWebEngineView *webEngineView() const;
