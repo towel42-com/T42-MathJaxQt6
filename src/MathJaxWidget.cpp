@@ -55,11 +55,19 @@ namespace NTowel42
         if ( !fImpl->svgWidget->renderer()->isValid() )
         {
             emit sigErrorMessage( tr( "Could not load the SVG file" ) );
+            if ( fFormula.has_value() )
+            {
+                auto pos = sFormulaToSVGMap.find( fFormula.value() );
+                if ( pos != sFormulaToSVGMap.end() )
+                    sFormulaToSVGMap.erase( pos );
+            }
         }
         else
         {
             setVisible( true );
             updateSVGSize();
+            if ( fFormula.has_value() )
+                sFormulaToSVGMap[ fFormula.value() ] = svg;
         }
     }
 
