@@ -34,8 +34,6 @@ namespace NTowel42
         bool isFormula( const std::optional< QString > &formula ) const;
         void updateSVGSize();
 
-        std::optional< QByteArray > svgForFormula( const QString &formula ) const;
-
         void setSubordinateTo( CMathJaxWidget *controllingWidget );
         void setSubordinateTo( const std::list< CMathJaxWidget * > &controllingWidgets );
 
@@ -61,8 +59,6 @@ namespace NTowel42
 
         NTowel42::CQt6MathJax *fEngine{ nullptr };
         std::unique_ptr< Ui::CMathJaxWidget > fImpl{};
-
-        static std::unordered_map< QString, QByteArray > sFormulaToSVGMap;
     };
 }
 #endif   // MAINWINDOW_H

@@ -7,8 +7,6 @@
 
 namespace NTowel42
 {
-    std::unordered_map< QString, QByteArray > CMathJaxWidget::sFormulaToSVGMap;
-
     CMathJaxWidget::CMathJaxWidget( QWidget *parent ) :
         QWidget( parent ),
         fImpl( new Ui::CMathJaxWidget ),
@@ -55,19 +53,11 @@ namespace NTowel42
         if ( !fImpl->svgWidget->renderer()->isValid() )
         {
             emit sigErrorMessage( tr( "Could not load the SVG file" ) );
-            if ( fFormula.has_value() )
-            {
-                auto pos = sFormulaToSVGMap.find( fFormula.value() );
-                if ( pos != sFormulaToSVGMap.end() )
-                    sFormulaToSVGMap.erase( pos );
-            }
         }
         else
         {
             setVisible( true );
             updateSVGSize();
-            if ( fFormula.has_value() )
-                sFormulaToSVGMap[ fFormula.value() ] = svg;
         }
     }
 
@@ -148,16 +138,6 @@ namespace NTowel42
         connect( fEngine, &NTowel42::CQt6MathJax::sigErrorMessage, this, &CMathJaxWidget::sigErrorMessage );
     }
 
-    std::optional< QByteArray > CMathJaxWidget::svgForFormula( const QString &formula ) const
-    {
-        auto pos = sFormulaToSVGMap.find( formula );
-        if ( pos != sFormulaToSVGMap.end() )
-        {
-            return ( *pos ).second;
-        };
-        return {};
-    }
-
     void CMathJaxWidget::setSubordinateTo( const std::list< CMathJaxWidget * > &controllingWidgets )
     {
         fControllingWidgets = controllingWidgets;
@@ -190,14 +170,8 @@ namespace NTowel42
             clear();
         else
         {
-            auto svg = svgForFormula( formula.value() );
-            if ( svg.has_value() )
-                loadSVG( svg.value() );
-            else
-            {
-                setVisible( false );
-                fEngine->renderSVG( fFormula.value() );
-            }
+            setVisible( false );
+            fEngine->renderSVG( fFormula.value() );
         }
     }
 
