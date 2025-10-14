@@ -7,7 +7,6 @@
 #include <QLoggingCategory>
 
 class QWebEngineView;
-class QSvgWidget;
 
 T42QT6MATHJAX_EXPORT Q_DECLARE_LOGGING_CATEGORY( T42Qt6MathJax );
 T42QT6MATHJAX_EXPORT Q_DECLARE_LOGGING_CATEGORY( T42Qt6MathJaxConsole );
