@@ -11,6 +11,7 @@ MathJax = {
             return jax.formatError(error);
         }
     },
+    displayAlign: "left",
     options: {
         enableMenu: true,
         enableSpeech: false,       // false to disable speech strings
