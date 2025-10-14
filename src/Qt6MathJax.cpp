@@ -15,8 +15,6 @@
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 #include <QDirIterator>
-#include <QSvgWidget>
-#include <QSvgRenderer>
 
 #include <algorithm>
 #include <unordered_map>
