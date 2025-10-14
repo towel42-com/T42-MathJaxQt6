@@ -8,52 +8,67 @@
 #include <QGroupBox>
 #include <QSvgWidget>
 #include <QApplication>
+#include <QScrollArea>
 #include <QFrame>
+#include <QSizePolicy>
+#include <QWheelEvent>
+#include <QStyle>
+#include <QScrollBar>
+
 namespace NTowel42
 {
-    CMathJaxWidget::CMathJaxWidget( const QString &title, QWidget *parent ) :
-        CMathJaxWidget( parent )
+    CMathJaxWidget::CMathJaxWidget( QWidget *parent ) :
+        CMathJaxWidget( {}, parent )
     {
-        setTitle( title );
     }
 
-    CMathJaxWidget::CMathJaxWidget( QWidget *parent ) :
-        QWidget( parent ),
+    CMathJaxWidget::CMathJaxWidget( const QString &title, QWidget *parent ) :
+        QGroupBox( title, parent ),
         fEngine( nullptr )
     {
         setObjectName( "Towel42_CMathJaxWidget" );
+
+        setBackgroundRole( QPalette::Light );
+
         auto hLayout = new QHBoxLayout( this );
-        hLayout->setSpacing( 0 );
-        hLayout->setContentsMargins( 0, 0, 0, 0 );
+        hLayout->setContentsMargins( 6, 0, 6, 6 );
 
-        fGroupBox = new QGroupBox( this );
-        fGroupBox->setObjectName( "fGroupBox" );
-        fGroupBox->setTitle( "" );
-        hLayout->addWidget( fGroupBox );
+        fScrollArea = new QScrollArea( this );
+        fScrollBarSize = fScrollArea->style()->pixelMetric( QStyle::PM_ScrollBarExtent );
+        fScrollArea->setAlignment( Qt::AlignCenter );
 
-        auto hLayout2 = new QHBoxLayout( fGroupBox );
-        hLayout2->setSpacing( 0 );
-        hLayout2->setContentsMargins( 0, 0, 0, 0 );
+        QSizePolicy sizePolicy( QSizePolicy::Policy::MinimumExpanding, QSizePolicy::Policy::MinimumExpanding );
+        sizePolicy.setHorizontalStretch( 0 );
+        sizePolicy.setVerticalStretch( 0 );
+        fScrollArea->setSizePolicy( sizePolicy );
 
-        auto frame = new QFrame( fGroupBox );
-        frame->setObjectName( "frame" );
-        frame->setFrameShape( QFrame::Shape::StyledPanel );
-        frame->setFrameShadow( QFrame::Shadow::Raised );
+        hLayout->addWidget( fScrollArea );
+        fScrollArea->setWidgetResizable( false );
 
-        auto hLayout3 = new QHBoxLayout( frame );
-        hLayout2->addWidget( frame );
-
-        fSVGWidget = new QSvgWidget( frame );
+        fSVGWidget = new QSvgWidget( fScrollArea );
+        fScrollArea->setWidget( fSVGWidget );
         fSVGWidget->setObjectName( "fSVGWidget" );
         fSVGWidget->setMinimumSize( QSize( 0, 10 ) );
+        fSVGWidget->setBackgroundRole( QPalette::Light );
 
-        hLayout3->addWidget( fSVGWidget, 0, Qt::AlignmentFlag::AlignCenter );
+        installEventFilter( fScrollArea );
 
         clear();
+        setMinimumHeight( fPixelHeightPerFormula + fScrollBarSize * 2 );
     }
 
     CMathJaxWidget::~CMathJaxWidget()
     {
+    }
+
+    bool CMathJaxWidget::eventFilter( QObject *object, QEvent *event )
+    {
+        if ( object == fScrollArea && event->type() == QEvent::Wheel )
+        {
+            QWheelEvent *wheelEvent = static_cast< QWheelEvent * >( event );
+            return true;
+        }
+        return false;
     }
 
     void CMathJaxWidget::clear()
@@ -64,7 +79,7 @@ namespace NTowel42
 
     void CMathJaxWidget::setTitle( const QString &title )
     {
-        fGroupBox->setTitle( title );
+        QGroupBox::setTitle( title );
     }
 
     bool CMathJaxWidget::isFormula( const std::optional< QString > &formula ) const
@@ -97,8 +112,11 @@ namespace NTowel42
         }
         else
         {
+            if ( fSVGWidget->renderer()->aspectRatioMode() != Qt::AspectRatioMode::KeepAspectRatio )
+                fSVGWidget->renderer()->setAspectRatioMode( Qt::AspectRatioMode::KeepAspectRatio );
+
             setVisible( true );
-            updateSVGSize();
+            autoScale();
         }
     }
 
@@ -112,7 +130,7 @@ namespace NTowel42
         while ( ii.hasNext() )
         {
             retVal += 1.0;
-            QRegularExpressionMatch match = ii.next();
+            auto match = ii.next();
 
             int num = 0;
             auto jj = innerRegex.globalMatch( match.captured() );
@@ -128,35 +146,54 @@ namespace NTowel42
         return retVal;
     }
 
-    void CMathJaxWidget::updateSVGSize()
+    void CMathJaxWidget::resizeEvent( QResizeEvent * /*event*/ )
     {
-        if ( !fFormula.has_value() )
-            return;
+        autoScale();
+    }
 
-        if ( !fSVGWidget->isVisible() || !fSVGWidget->renderer()->isValid() )
-            return;
+    double CMathJaxWidget::autoScale()
+    {
+        if ( !fSVGWidget->renderer()->isValid() )
+            return 1.0;
 
-        if ( fSVGWidget->renderer()->aspectRatioMode() != Qt::AspectRatioMode::KeepAspectRatio )
-            fSVGWidget->renderer()->setAspectRatioMode( Qt::AspectRatioMode::KeepAspectRatio );
-
-        auto maxHeight = fPixelHeightPerFormula * numFormulas( fFormula.value() );
-
-        auto maxSize = QSize( width(), maxHeight );
-        auto defaultSize = fSVGWidget->renderer()->defaultSize();
-
-        QSize sz;
-        double multiplier = 1.0;
-        do
+        auto computeScale =   //
+            [ = ]( const QSize &svgSize, const QSize &svgDefaultSize )
         {
-            sz = defaultSize.scaled( maxSize * multiplier, Qt::KeepAspectRatio );
-            multiplier += 0.1;
-        }
-        while ( sz.height() < ( 0.3 * fPixelHeightPerFormula ) );
+            auto widthScale = 1.0 * svgSize.width() / svgDefaultSize.width();
+            auto heightScale = 1.0 * svgSize.height() / svgDefaultSize.height();
+            auto scale = std::min( widthScale, heightScale );
+            return scale;
+        };
 
-        auto buffer = std::max( 30, std::min( static_cast< int >( sz.height() * 0.25 ), fPixelHeightPerFormula ) );
-        auto maxParentHeight = sz.height() + buffer;
-        setMaximumHeight( maxParentHeight );
-        setMinimumHeight( sz.height() );
+        auto numFormulas = this->numFormulas( fFormula.value() );
+        auto perfectHeight = ( fPixelHeightPerFormula * numFormulas ) - 2*fScrollBarSize;
+
+        auto parentWidget = fScrollArea->viewport();
+        auto parentSize = parentWidget->size();
+
+        auto svgDefaultSize = fSVGWidget->renderer()->defaultSize();
+        auto scaleToSize = QSize( parentSize.width() - 2 * fScrollBarSize, perfectHeight );
+        auto svgSize = svgDefaultSize.scaled( scaleToSize, Qt::AspectRatioMode::KeepAspectRatio );
+
+        auto scale = computeScale( svgSize, svgDefaultSize );
+        if ( scale < fMinScale )
+        {
+            auto ratio = fMinScale / scale;
+            svgSize = svgSize * ratio;
+            scale = computeScale( svgSize, svgDefaultSize );
+        }
+        
+        fSVGWidget->setFixedSize( svgSize );
+        fScrollArea->verticalScrollBar()->setValue( 0 );
+        fScrollArea->horizontalScrollBar()->setValue( 0 );
+
+        update();
+        return 1.0;
+    }
+
+    QSize CMathJaxWidget::minimumSizeHint() const
+    {
+        return { 100, fPixelHeightPerFormula + fScrollBarSize * 2 };
     }
 
     void CMathJaxWidget::slotSVGRendered( const QString &formula, const QByteArray &svg )
@@ -169,7 +206,14 @@ namespace NTowel42
     void CMathJaxWidget::slotSetPixelsPerFormula( int pixelsPerFormula )
     {
         fPixelHeightPerFormula = pixelsPerFormula;
-        updateSVGSize();
+        setMinimumHeight( fPixelHeightPerFormula + fScrollBarSize * 2 );
+        autoScale();
+    }
+
+    void CMathJaxWidget::slotSetMinScale( double minScale )
+    {
+        fMinScale = minScale;
+        autoScale();
     }
 
     void CMathJaxWidget::setEngine( NTowel42::CQt6MathJax *engine )
@@ -205,6 +249,12 @@ namespace NTowel42
 
         if ( isFormula( formula ) )
             return;
+
+        if ( controllersHaveFormula( formula ) )
+        {
+            setVisible( false );
+            return;
+        }
 
         fFormula = formula;
         if ( !fFormula.has_value() || fFormula.value().isEmpty() )

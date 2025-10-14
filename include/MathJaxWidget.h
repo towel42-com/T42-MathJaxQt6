@@ -6,12 +6,9 @@
 #include <QGroupBox>
 #include <QByteArray>
 #include <optional>
-#include <memory>
-#include <unordered_map>
+#include <list>
 
-class QGroupBox;
 class QSvgWidget;
-class QFrame;
 class QResizeEvent;
 class QScrollArea;
 
@@ -41,32 +38,27 @@ namespace NTowel42
         void clear();
 
         bool isFormula( const std::optional< QString > &formula ) const;
-        //void updateSVGSize();
 
         void setSubordinateTo( CMathJaxWidget *controllingWidget );
         void setSubordinateTo( const std::list< CMathJaxWidget * > &controllingWidgets );
 
         static double numFormulas( const QString &tex );
-        double autoScale();
-        void updateMinimumHeight();
 
         virtual bool eventFilter( QObject *object, QEvent *event ) override;
 
-        //virtual int heightForWidth( int width ) const override;
-        //virtual bool hasHeightForWidth() const;
-        //virtual QSize sizeHint() const override;
         virtual QSize minimumSizeHint() const override;
-        virtual void resizeEvent( QResizeEvent * /*event*/ ) override;
+        virtual void resizeEvent( QResizeEvent * event ) override;
 
     Q_SIGNALS:
         void sigErrorMessage( const QString &errorMsg );
 
     public Q_SLOTS:
         void slotSetPixelsPerFormula( int pixelsPerFormula );
+        void slotSetMinScale( double minScale );
         void slotSVGRendered( const QString &tex, const QByteArray &svg );
 
     private:
-        int computeHeightForWidth( int w ) const;
+        double autoScale();
         bool controllersHaveFormula( const std::optional< QString > &formula ) const;
         void loadSVG( const QByteArray &svg );
 
