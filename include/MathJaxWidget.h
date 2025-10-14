@@ -9,6 +9,10 @@
 #include <memory>
 #include <unordered_map>
 
+class QGroupBox;
+class QSvgWidget;
+class QFrame;
+
 namespace NTowel42
 {
     class CQt6MathJax;
@@ -24,8 +28,10 @@ namespace NTowel42
 
     public:
         explicit CMathJaxWidget( QWidget *parent = nullptr );
+        explicit CMathJaxWidget( const QString & titleBar, QWidget *parent = nullptr );
         ~CMathJaxWidget();
 
+        void setTitle( const QString &title );
         void setEngine( NTowel42::CQt6MathJax *engine );
         void setFormula( const std::optional< QString > &formula );
         void setFormulaAndWait( const QString &formula );
@@ -58,7 +64,9 @@ namespace NTowel42
         std::list< CMathJaxWidget * > fControllingWidgets;
 
         NTowel42::CQt6MathJax *fEngine{ nullptr };
-        std::unique_ptr< Ui::CMathJaxWidget > fImpl{};
+
+        QGroupBox *fGroupBox{ nullptr };
+        QSvgWidget *fSVGWidget{ nullptr };
     };
 }
 #endif   // MAINWINDOW_H
