@@ -4,7 +4,6 @@
 
 #include <QWebEngineView>
 #include <QWebEnginePage>
-#include <QSvgRenderer>
 
 #include <QMessageBox>
 #include <QTimer>
