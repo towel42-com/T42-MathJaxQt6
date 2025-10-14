@@ -1,18 +1,54 @@
 #include "include/MathJaxWidget.h"
 #include "include/Qt6MathJax.h"
-#include "ui_MathJaxWidget.h"
 
 #include <QSvgRenderer>
 #include <QRegularExpression>
 
+#include <QHBoxLayout>
+#include <QGroupBox>
+#include <QSvgWidget>
+#include <QApplication>
+#include <QFrame>
 namespace NTowel42
 {
+    CMathJaxWidget::CMathJaxWidget( const QString &title, QWidget *parent ) :
+        CMathJaxWidget( parent )
+    {
+        setTitle( title );
+    }
+
     CMathJaxWidget::CMathJaxWidget( QWidget *parent ) :
         QWidget( parent ),
-        fImpl( new Ui::CMathJaxWidget ),
         fEngine( nullptr )
     {
-        fImpl->setupUi( this );
+        setObjectName( "Towel42_CMathJaxWidget" );
+        auto hLayout = new QHBoxLayout( this );
+        hLayout->setSpacing( 0 );
+        hLayout->setContentsMargins( 0, 0, 0, 0 );
+
+        fGroupBox = new QGroupBox( this );
+        fGroupBox->setObjectName( "fGroupBox" );
+        fGroupBox->setTitle( "" );
+        hLayout->addWidget( fGroupBox );
+
+        auto hLayout2 = new QHBoxLayout( fGroupBox );
+        hLayout2->setSpacing( 0 );
+        hLayout2->setContentsMargins( 0, 0, 0, 0 );
+
+        auto frame = new QFrame( fGroupBox );
+        frame->setObjectName( "frame" );
+        frame->setFrameShape( QFrame::Shape::StyledPanel );
+        frame->setFrameShadow( QFrame::Shadow::Raised );
+
+        auto hLayout3 = new QHBoxLayout( frame );
+        hLayout2->addWidget( frame );
+
+        fSVGWidget = new QSvgWidget( frame );
+        fSVGWidget->setObjectName( "fSVGWidget" );
+        fSVGWidget->setMinimumSize( QSize( 0, 10 ) );
+
+        hLayout3->addWidget( fSVGWidget, 0, Qt::AlignmentFlag::AlignCenter );
+
         clear();
     }
 
@@ -22,8 +58,13 @@ namespace NTowel42
 
     void CMathJaxWidget::clear()
     {
-        fImpl->svgWidget->load( QByteArray() );
+        fSVGWidget->load( QByteArray() );
         setVisible( false );
+    }
+
+    void CMathJaxWidget::setTitle( const QString &title )
+    {
+        fGroupBox->setTitle( title );
     }
 
     bool CMathJaxWidget::isFormula( const std::optional< QString > &formula ) const
@@ -49,8 +90,8 @@ namespace NTowel42
             return;
         }
 
-        fImpl->svgWidget->load( svg );
-        if ( !fImpl->svgWidget->renderer()->isValid() )
+        fSVGWidget->load( svg );
+        if ( !fSVGWidget->renderer()->isValid() )
         {
             emit sigErrorMessage( tr( "Could not load the SVG file" ) );
         }
@@ -92,16 +133,16 @@ namespace NTowel42
         if ( !fFormula.has_value() )
             return;
 
-        if ( !fImpl->svgWidget->isVisible() || !fImpl->svgWidget->renderer()->isValid() )
+        if ( !fSVGWidget->isVisible() || !fSVGWidget->renderer()->isValid() )
             return;
 
-        if ( fImpl->svgWidget->renderer()->aspectRatioMode() != Qt::AspectRatioMode::KeepAspectRatio )
-            fImpl->svgWidget->renderer()->setAspectRatioMode( Qt::AspectRatioMode::KeepAspectRatio );
+        if ( fSVGWidget->renderer()->aspectRatioMode() != Qt::AspectRatioMode::KeepAspectRatio )
+            fSVGWidget->renderer()->setAspectRatioMode( Qt::AspectRatioMode::KeepAspectRatio );
 
         auto maxHeight = fPixelHeightPerFormula * numFormulas( fFormula.value() );
 
         auto maxSize = QSize( width(), maxHeight );
-        auto defaultSize = fImpl->svgWidget->renderer()->defaultSize();
+        auto defaultSize = fSVGWidget->renderer()->defaultSize();
 
         QSize sz;
         double multiplier = 1.0;

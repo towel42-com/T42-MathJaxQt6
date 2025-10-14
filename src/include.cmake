@@ -36,7 +36,6 @@ set(project_H
 )
 
 set(qtproject_UIS
-    MathJaxWidget.ui
 )
 
 set(qtproject_QRC
