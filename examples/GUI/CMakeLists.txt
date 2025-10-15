@@ -51,7 +51,7 @@ target_link_libraries( ${PROJECT_NAME}
           ${project_pri_DEPS}
 )
 
-DeployQt( ${PROJECT_NAME} . EXTRA_TARGETS MathJaxQt6 )
+DeployQt( ${PROJECT_NAME} . EXTRA_TARGETS MathJaxQt6 SABUtils )
 DeploySystem( ${PROJECT_NAME} . INSTALL_ONLY 1 )
 
 INSTALL( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin )

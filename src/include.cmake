@@ -46,6 +46,7 @@ SET( project_pub_DEPS
     Qt6::Widgets
     Qt6::WebEngineWidgets
     Qt6::SvgWidgets
+    SABUtils
     ${project_pub_DEPS}
 )
 

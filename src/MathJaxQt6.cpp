@@ -1,6 +1,7 @@
 ﻿#include "include/MathJaxQt6.h"
 #include "include/private/MathJaxQt6_private.h"
 
+#include "SABUtils/FileUtils.h"
 #include <QDesktopServices>
 #include <QEventLoop>
 #include <QMetaEnum>
@@ -23,6 +24,8 @@ Q_LOGGING_CATEGORY( T42MathJaxQt6, "Towel42.MathJaxQt6", QtMsgType::QtInfoMsg )
 Q_LOGGING_CATEGORY( T42MathJaxQt6Debug, "Towel42.MathJaxQt6.Debug", QtMsgType::QtDebugMsg )
 Q_LOGGING_CATEGORY( T42MathJaxQt6Console, "Towel42.MathJaxQt6.Console", QtMsgType::QtInfoMsg );
 Q_LOGGING_CATEGORY( T42MathJaxQt6QRC, "Towel42.MathJaxQt6.QRC", QtMsgType::QtDebugMsg );
+Q_LOGGING_CATEGORY( T42MathJaxQt6Widget, "Towel42.MathJaxQt6.Widget", QtMsgType::QtDebugMsg );
+
 
 #undef qCDebug
 #undef qCInfo
@@ -87,13 +90,10 @@ namespace NTowel42
             if ( !T42MathJaxQt6QRC().isDebugEnabled() )
                 return;
 
-            QDirIterator ii( ":", QDirIterator::Subdirectories );
-            while ( ii.hasNext() )
+            auto files = NSABUtils::NFileUtils::dumpResources( true );
+            for(auto && ii : files)
             {
-                // Advance the iterator to the next entry and print its path.
-                auto fileName = ii.next();
-                auto size = QFileInfo( fileName ).size();
-                qCDebug( T42MathJaxQt6QRC ) << ii.next() << " " << size;
+                qCDebug( T42MathJaxQt6QRC ) << ii;
             }
         }
 
@@ -141,7 +141,7 @@ namespace NTowel42
                 0,
                 [ = ]()
                 {
-                    QString url = "qrc:/Qt6MathJax/MathJaxQt6.html";
+                    QString url = "qrc:/MathJaxQt6/MathJaxQt6.html";
                     fView->load( url );
                 } );
         }
@@ -555,5 +555,13 @@ namespace NTowel42
     void CMathJaxQt6::initResources()
     {
         Q_INIT_RESOURCE( MathJaxQt6 );
+
+        Q_ASSERT( QFile( ":/MathJaxQt6/MathJaxQt6.html" ).exists() );
+        Q_ASSERT( QFile( ":/MathJaxQt6/MathJaxQt6.js" ).exists() );
+        Q_ASSERT( QFile( ":/MathJaxQt6/MathJaxQt6Init.js" ).exists() );
+        if ( !QFile( ":/MathJaxQt6/MathJaxQt6.html" ).exists() || !QFile( ":/MathJaxQt6/MathJaxQt6.js" ).exists() || !QFile( ":/MathJaxQt6/MathJaxQt6Init.js" ).exists() )
+        {
+            NPrivate::dumpQRC();
+        }
     }
 }

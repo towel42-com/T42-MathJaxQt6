@@ -5,6 +5,7 @@
 #include <QMainWindow>
 #include <memory>
 
+class QLabel;
 namespace NTowel42
 {
     class CMathJaxQt6;
@@ -27,6 +28,7 @@ public:
 
 private slots:
     void slotEngineReady( bool aOK );
+    void slotScaleChanged( double scale );
 
 private:
     void slotErrorMessage( const QString &msg );
@@ -34,7 +36,9 @@ private:
     void slotSyncRender();
 
 private:
+    void loadValues();
     void clear();
+    QLabel *fScaleLabel{ nullptr };
     std::unique_ptr< Ui::CMainWindow > fImpl{};
     NTowel42::CMathJaxQt6 *fEngine{ nullptr };
 };
