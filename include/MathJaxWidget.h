@@ -11,6 +11,7 @@
 class QSvgWidget;
 class QResizeEvent;
 class QScrollArea;
+class QWheelEvent;
 
 namespace NTowel42
 {
@@ -33,6 +34,7 @@ namespace NTowel42
 
         void setTitle( const QString &title );
         void setEngine( NTowel42::CQt6MathJax *engine );
+
         void setFormula( const std::optional< QString > &formula );
         void setFormulaAndWait( const QString &formula );
         void clear();
@@ -44,10 +46,10 @@ namespace NTowel42
 
         static double numFormulas( const QString &tex );
 
-        virtual bool eventFilter( QObject *object, QEvent *event ) override;
+        virtual void wheelEvent( QWheelEvent *event ) override;
 
         virtual QSize minimumSizeHint() const override;
-        virtual void resizeEvent( QResizeEvent * event ) override;
+        virtual void resizeEvent( QResizeEvent *event ) override;
 
     Q_SIGNALS:
         void sigErrorMessage( const QString &errorMsg );
@@ -58,7 +60,15 @@ namespace NTowel42
         void slotSVGRendered( const QString &tex, const QByteArray &svg );
 
     private:
+        void updateMinimumHeight();
         double autoScale();
+
+        QSize idealSVGSize() const;
+        QSize svgDefaultSize() const;
+
+        int computePerfectHeight() const;
+        void setScale( double newScale );
+
         bool controllersHaveFormula( const std::optional< QString > &formula ) const;
         void loadSVG( const QByteArray &svg );
 
@@ -67,6 +77,7 @@ namespace NTowel42
         int fScrollBarSize{ 0 };
         int fPixelHeightPerFormula{ 200 };
         double fMinScale{ 0.0125 };
+        double fScale{ 1.0 };
         std::list< CMathJaxWidget * > fControllingWidgets;
 
         NTowel42::CQt6MathJax *fEngine{ nullptr };
@@ -75,4 +86,4 @@ namespace NTowel42
         QSvgWidget *fSVGWidget{ nullptr };
     };
 }
-#endif   // MAINWINDOW_H
+#endif   
