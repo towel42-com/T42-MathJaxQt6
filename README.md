@@ -1,7 +1,7 @@
 
 # Overview
 
-*T42-QtMathJax* is a `cmake` based `Qt 6` library that allows you to easily add
+*T42-MathJaxQt6* is a `cmake` based `Qt 6` library that allows you to easily add
 math typesetting into any [Qt] application.
 
 It is based on the work previously done (and forked from) 
@@ -9,7 +9,7 @@ https://github.com/nathancarter/qtmathjax.
 
 [MathJax] is the de facto standard for mathematical typesetting on
 the web, using a JavaScript-based typesetting engine.
-*T42-QtMathJax* imports the latest version (4.0) from https://github.com/mathjax/MathJax
+*T42-MathJaxQt6* imports the latest version (4.0) from https://github.com/mathjax/MathJax
 as a submodule.  **Note** currently the internal mechanism uses
 the public https://cdn.jsdelivr.net/npm/mathjax@4 *MathJax* system rather
 than using the local version.  This is necessary as there appears to be a 
@@ -35,29 +35,29 @@ To use *T42-QtMathJax*, follow these steps.
 1. In your top level `CMakeLists.txt` file import *T42-QtMathJax* by adding the following
    line.
    ```
-   add_submodule(/path/to/T42-Qt6MathJax)
+   add_submodule(/path/to/T42-MathJaxQt6)
    
    ```
    This step will also update your C++ include path
 2. In the source file where you need to use it, include the one
-   class you need, `NTowel42::CQt6MathJax`, via `#include "Qt6MathJax.h"`.
-3. Enable debugging as necessary.  *T42-Qt6MathJax* uses the modern [QLoggingCategory] system with the following categories
-    - Qt6MathJax - Informational level data
-    - Qt6MathJax.Console - Text/messages from the JavaScript console
-    - Qt6MathJax.QRC - Reports on all the files that are contained in the QRC file
-    - Qt6MathJax.Debug - Low level debug messages
-4. Create an instance of the class, connect to the signals you need (`CQt6MathJax::sigSVGRendered is required`)
+   class you need, `NTowel42::CMathJaxQt6`, via `#include "MathJaxQt6.h"`.
+3. Enable debugging as necessary.  *T42-MathJaxQt6* uses the modern [QLoggingCategory] system with the following categories
+    - MathJaxQt6 - Informational level data
+    - MathJaxQt6.Console - Text/messages from the JavaScript console
+    - MathJaxQt6.QRC - Reports on all the files that are contained in the QRC file
+    - MathJaxQt6.Debug - Low level debug messages
+4. Create an instance of the class, connect to the signals you need (`CMathJaxQt6::sigSVGRendered is required`)
     and call the `renderSVG( const QString & texCode )` method.
 
 ```
-NTowel42::CQt6MathJax renderer;  
+NTowel42::CMathJaxQt6 renderer;  
 QByteArray svgData;
-connect( &renderer, &NTowel42::CQt6MathJax::sigErrorMessage,
+connect( &renderer, &NTowel42::CMathJaxQt6::sigErrorMessage,
     [=]( const QString & msg )
     {
         qDebug() << msg;
     } );
-connect( &renderer, &NTowel42::CQt6MathJax::sigSVGRendered,
+connect( &renderer, &NTowel42::CMathJaxQt6::sigSVGRendered,
     [=]( const QByteArray & svg )
     {
         svgData = svg;
