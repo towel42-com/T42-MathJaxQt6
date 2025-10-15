@@ -47,43 +47,69 @@ namespace NTowel42
         static double numFormulas( const QString &tex );
 
         virtual void wheelEvent( QWheelEvent *event ) override;
-
         virtual QSize minimumSizeHint() const override;
+
+        double scale() const { return fScale; }
+
+        bool autoUpdateMinimumParentSize() const { return fAutoUpdateMinimumParentSize; }
+        bool hideEmptyOrInvalid() const { return fHideEmptyOrInvalid; }
+        bool autoSizeToParentWidth() const { return fAutoSizeToParentWidth; }
+        double minScale() const { return fMinScale; }
+        double maxScale() const { return fMaxScale; }
+        int numPixelsPerFormula() const { return fNumPixelsPerFormula; }
+
+    public:
         virtual void resizeEvent( QResizeEvent *event ) override;
 
     Q_SIGNALS:
         void sigErrorMessage( const QString &errorMsg );
+        void sigScaleChanged( double scaleValue );
 
     public Q_SLOTS:
-        void slotSetPixelsPerFormula( int pixelsPerFormula );
+        void slotSetNumPixelsPerFormula( int pixelsPerFormula );
         void slotSetMinScale( double minScale );
+        void slotSetMaxScale( double maxScale );
+        void slotSetAutoUpdateMinimumParentSize( bool autoUpdateMinimumParentSize );
+        void slotHideEmptyOrInvalid( bool hideEmptyOrInvalid );
+        void slotSetAutoSizeToParentWidth( bool autoSizeToParentWidth );
+        void slotSetScale( double newScale );
+
+    private Q_SLOTS:
         void slotSVGRendered( const QString &tex, const QByteArray &svg );
 
     private:
-        void updateMinimumHeight();
-        double autoScale();
+        bool showWidget( bool ignoreValid = false );
+        int heightPadding() const;
+        void setDefaultMinimumSize();
+        void autoScale();
+        void autoSizeParent( bool force );
 
         QSize idealSVGSize() const;
         QSize svgDefaultSize() const;
 
         int computePerfectHeight() const;
-        void setScale( double newScale );
 
         bool controllersHaveFormula( const std::optional< QString > &formula ) const;
+        bool controllersHaveFormula() const;
         void loadSVG( const QByteArray &svg );
 
     private:
         std::optional< QString > fFormula;
         int fScrollBarSize{ 0 };
-        int fPixelHeightPerFormula{ 200 };
+        int fNumPixelsPerFormula{ 200 };
         double fMinScale{ 0.0125 };
+        double fMaxScale{ 10.0 };
         double fScale{ 1.0 };
-        std::list< CMathJaxQt6Widget * > fControllingWidgets;
+        bool fAutoUpdateMinimumParentSize{ false };
+        bool fHideEmptyOrInvalid{ false };
+        bool fAutoSizeToParentWidth{ false };
 
+        std::list< CMathJaxQt6Widget * > fControllingWidgets;
         NTowel42::CMathJaxQt6 *fEngine{ nullptr };
 
         QScrollArea *fScrollArea{ nullptr };
         QSvgWidget *fSVGWidget{ nullptr };
     };
 }
-#endif   
+
+#endif
