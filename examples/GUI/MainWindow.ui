@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Towel 42 Development, LLC - CQt6MathJax GUI Example</string>
+   <string>Towel 42 Development, LLC - CMathJaxQt6 GUI Example</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -35,7 +35,7 @@
          <number>0</number>
         </property>
         <item>
-         <widget class="NTowel42::CMathJaxWidget" name="mathJaxWidget" native="true">
+         <widget class="NTowel42::CMathJaxQt6Widget" name="mathJaxWidget" native="true">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
             <horstretch>0</horstretch>
@@ -149,9 +149,9 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>NTowel42::CMathJaxWidget</class>
+   <class>NTowel42::CMathJaxQt6Widget</class>
    <extends>QWidget</extends>
-   <header>../../include/MathJaxWidget.h</header>
+   <header>include/MathJaxQt6Widget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

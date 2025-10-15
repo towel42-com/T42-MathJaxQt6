@@ -1,7 +1,7 @@
 #ifndef MATHJAXWIDGET_H
 #define MATHJAXWIDGET_H
 
-#include "T42-Qt6MathJax/include/MathJaxQt6Export.h"
+#include "T42-MathJaxQt6/include/MathJaxQt6Export.h"
 
 #include <QGroupBox>
 #include <QByteArray>
