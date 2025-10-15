@@ -1,4 +1,4 @@
-#include "include/Qt6MathJax.h"
+#include "include/MathJaxQt6.h"
 
 #include <QApplication>
 #include <QCommandLineParser>
@@ -13,15 +13,15 @@ void setupDebug( int debugLevel, int port )
     std::vector< std::pair< QString, bool > > catVector =   //
         {
             { "js", false },   //
-            { "Towel42.Qt6MathJax", false },
-            { "Towel42.Qt6MathJax.Console", false },
-            { "Towel42.Qt6MathJax.Debug", false },
-            { "Towel42.Qt6MathJax.QRC", false }   //
+            { "Towel42.MathJaxQt6", false },
+            { "Towel42.MathJaxQt6.Console", false },
+            { "Towel42.MathJaxQt6.Debug", false },
+            { "Towel42.MathJaxQt6.QRC", false }   //
         };
     if ( debugLevel > 0 )
     {
         if ( ( port >= 0 ) && ( port <= 65535 ) )
-            NTowel42::CQt6MathJax::enableDebugConsole( port );
+            NTowel42::CMathJaxQt6::enableDebugConsole( port );
 
         catVector[ 0 ].second = true;
         catVector[ 1 ].second = true;
@@ -72,10 +72,10 @@ int main( int argc, char *argv[] )
     auto debugOption = QCommandLineOption(
         QStringList() << "debug" << "d",
         "Debug level <default=0>\n"
-        "    1 - Enables the Chromium Debug System at the port set via -port, as well as the 'js', 'Towel42.Qt6MathJax' logging categories\n"
-        "    2 - Enables level 1 and the Towel42.Qt6MathJax.Console logging category\n"
-        "    3 - Enables level 2 and the Towel42.Qt6MathJax.Debug\n"
-        "    4 - Enables level 2 and the Towel42.Qt6MathJax.QRC",
+        "    1 - Enables the Chromium Debug System at the port set via -port, as well as the 'js', 'Towel42.MathJaxQt6' logging categories\n"
+        "    2 - Enables level 1 and the Towel42.MathJaxQt6.Console logging category\n"
+        "    3 - Enables level 2 and the Towel42.MathJaxQt6.Debug\n"
+        "    4 - Enables level 2 and the Towel42.MathJaxQt6.QRC",
         "level", "0" );
     parser.addOption( debugOption );
 
@@ -134,7 +134,7 @@ int main( int argc, char *argv[] )
     auto inputTeX = parser.value( inputTeXOption );
     int retVal = -1;
     std::cout << "Rendering TeX input: '" << inputTeX.toStdString() << "'" << "\n";
-    NTowel42::CQt6MathJax engine;
+    NTowel42::CMathJaxQt6 engine;
     engine.renderSVG(
         inputTeX,   //
         [ &engine, outputFile, &retVal, inputTeX ]( const QString &tex, const std::optional< QByteArray > &svg )   //

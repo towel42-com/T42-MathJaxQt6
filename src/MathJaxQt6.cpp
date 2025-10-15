@@ -1,5 +1,5 @@
-﻿#include "include/Qt6MathJax.h"
-#include "include/private/Qt6MathJax_private.h"
+﻿#include "include/MathJaxQt6.h"
+#include "include/private/MathJaxQt6_private.h"
 
 #include <QDesktopServices>
 #include <QEventLoop>
@@ -19,10 +19,10 @@
 #include <algorithm>
 #include <unordered_map>
 
-Q_LOGGING_CATEGORY( T42Qt6MathJax, "Towel42.Qt6MathJax", QtMsgType::QtInfoMsg )
-Q_LOGGING_CATEGORY( T42Qt6MathJaxDebug, "Towel42.Qt6MathJax.Debug", QtMsgType::QtDebugMsg )
-Q_LOGGING_CATEGORY( T42Qt6MathJaxConsole, "Towel42.Qt6MathJax.Console", QtMsgType::QtInfoMsg );
-Q_LOGGING_CATEGORY( T42Qt6MathJaxQRC, "Towel42.Qt6MathJax.QRC", QtMsgType::QtDebugMsg );
+Q_LOGGING_CATEGORY( T42MathJaxQt6, "Towel42.MathJaxQt6", QtMsgType::QtInfoMsg )
+Q_LOGGING_CATEGORY( T42MathJaxQt6Debug, "Towel42.MathJaxQt6.Debug", QtMsgType::QtDebugMsg )
+Q_LOGGING_CATEGORY( T42MathJaxQt6Console, "Towel42.MathJaxQt6.Console", QtMsgType::QtInfoMsg );
+Q_LOGGING_CATEGORY( T42MathJaxQt6QRC, "Towel42.MathJaxQt6.QRC", QtMsgType::QtDebugMsg );
 
 #undef qCDebug
 #undef qCInfo
@@ -75,7 +75,7 @@ namespace NTowel42
 
             auto msg = tr( "%1: %2:%3 - %4" ).arg( typeString ).arg( sourceID ).arg( lineNumber ).arg( message );
 
-            qCInfo( T42Qt6MathJaxConsole ) << msg;
+            qCInfo( T42MathJaxQt6Console ) << msg;
             if ( level == JavaScriptConsoleMessageLevel::ErrorMessageLevel )
             {
                 emit sigErrorMessage( msg );
@@ -84,7 +84,7 @@ namespace NTowel42
 
         void dumpQRC()
         {
-            if ( !T42Qt6MathJaxQRC().isDebugEnabled() )
+            if ( !T42MathJaxQt6QRC().isDebugEnabled() )
                 return;
 
             QDirIterator ii( ":", QDirIterator::Subdirectories );
@@ -93,11 +93,11 @@ namespace NTowel42
                 // Advance the iterator to the next entry and print its path.
                 auto fileName = ii.next();
                 auto size = QFileInfo( fileName ).size();
-                qCDebug( T42Qt6MathJaxQRC ) << ii.next() << " " << size;
+                qCDebug( T42MathJaxQt6QRC ) << ii.next() << " " << size;
             }
         }
 
-        CQt6MathJax::CQt6MathJax( NTowel42::CQt6MathJax *parent ) :
+        CMathJaxQt6::CMathJaxQt6( NTowel42::CMathJaxQt6 *parent ) :
             QObject( parent )
         {
             dumpQRC();
@@ -111,7 +111,7 @@ namespace NTowel42
             fView->setMinimumSize( 200, 200 );
 
             auto page = new CWebEnginePage_WConsoleLog( fView );
-            connect( page, &CWebEnginePage_WConsoleLog::sigErrorMessage, this, &CQt6MathJax::sigErrorMessage );
+            connect( page, &CWebEnginePage_WConsoleLog::sigErrorMessage, this, &CMathJaxQt6::sigErrorMessage );
 
             fView->setPage( page );
 
@@ -125,55 +125,55 @@ namespace NTowel42
                 page, &QWebEnginePage::loadingChanged,
                 [ = ]( const QWebEngineLoadingInfo &loadingInfo )   //
                 {
-                    qCDebug( T42Qt6MathJaxDebug ) << "QWebEnginePage: Loading info:";
-                    qCDebug( T42Qt6MathJaxDebug ) << "          errorCode: " << loadingInfo.errorCode();
-                    qCDebug( T42Qt6MathJaxDebug ) << "        errorString: \"" << loadingInfo.errorString() << "\"";
-                    //qCDebug( T42Qt6MathJaxDebug ) << "         isDownload: " << loadingInfo.isDownload();
-                    qCDebug( T42Qt6MathJaxDebug ) << "        isErrorPage: " << loadingInfo.isErrorPage();
-                    qCDebug( T42Qt6MathJaxDebug ) << "    responseHeaders: " << loadingInfo.responseHeaders();
-                    qCDebug( T42Qt6MathJaxDebug ) << "             status: " << loadingInfo.status();
-                    qCDebug( T42Qt6MathJaxDebug ) << "                url: " << loadingInfo.url();
+                    qCDebug( T42MathJaxQt6Debug ) << "QWebEnginePage: Loading info:";
+                    qCDebug( T42MathJaxQt6Debug ) << "          errorCode: " << loadingInfo.errorCode();
+                    qCDebug( T42MathJaxQt6Debug ) << "        errorString: \"" << loadingInfo.errorString() << "\"";
+                    //qCDebug( T42MathJaxQt6Debug ) << "         isDownload: " << loadingInfo.isDownload();
+                    qCDebug( T42MathJaxQt6Debug ) << "        isErrorPage: " << loadingInfo.isErrorPage();
+                    qCDebug( T42MathJaxQt6Debug ) << "    responseHeaders: " << loadingInfo.responseHeaders();
+                    qCDebug( T42MathJaxQt6Debug ) << "             status: " << loadingInfo.status();
+                    qCDebug( T42MathJaxQt6Debug ) << "                url: " << loadingInfo.url();
                 } );
 
-            connect( page, &QWebEnginePage::loadingChanged, this, &CQt6MathJax::slotLoadingChanged );
+            connect( page, &QWebEnginePage::loadingChanged, this, &CMathJaxQt6::slotLoadingChanged );
 
             QTimer::singleShot(
                 0,
                 [ = ]()
                 {
-                    QString url = "qrc:/Qt6MathJax/Qt6MathJax.html";
+                    QString url = "qrc:/Qt6MathJax/MathJaxQt6.html";
                     fView->load( url );
                 } );
         }
 
-        CQt6MathJax::~CQt6MathJax()
+        CMathJaxQt6::~CMathJaxQt6()
         {
             delete fView;
         }
 
-        void CQt6MathJax::setupDebugTracing()
+        void CMathJaxQt6::setupDebugTracing()
         {
-            connect( fView, &QWebEngineView::iconChanged, [ = ]( const QIcon &icon ) { qCDebug( T42Qt6MathJaxDebug ) << "iconChanged" << icon; } );
-            connect( fView, &QWebEngineView::iconUrlChanged, [ = ]( const QUrl &url ) { qCDebug( T42Qt6MathJaxDebug ) << "iconUrlChanged: " << url; } );
-            connect( fView, &QWebEngineView::loadFinished, [ = ]( bool status ) { qCInfo( T42Qt6MathJax ) << "Load Finished: " << ( status ? "Successful" : "Failed" ); } );
-            connect( fView, &QWebEngineView::loadProgress, [ = ]( int progress ) { qCInfo( T42Qt6MathJax ) << "Load Progress: " << progress; } );
-            connect( fView, &QWebEngineView::loadStarted, [ = ]() { qCInfo( T42Qt6MathJax ) << "Load Started: "; } );
-            connect( fView, &QWebEngineView::pdfPrintingFinished, [ = ]( const QString &filePath, bool success ) { qCDebug( T42Qt6MathJaxDebug ) << "PDF Print Finished: " << filePath << success; } );
-            connect( fView, &QWebEngineView::printFinished, [ = ]( bool success ) { qCDebug( T42Qt6MathJaxDebug ) << "Print Finished: " << success; } );
-            connect( fView, &QWebEngineView::printRequested, [ = ]() { qCDebug( T42Qt6MathJaxDebug ) << "Print Requested: "; } );
-            connect( fView, &QWebEngineView::printRequestedByFrame, [ = ]( QWebEngineFrame frame ) { qCDebug( T42Qt6MathJaxDebug ) << "Print Requested by Frame: " << frame.name(); } );
-            connect( fView, &QWebEngineView::renderProcessTerminated, [ = ]( QWebEnginePage::RenderProcessTerminationStatus terminationStatus, int exitCode ) { qCDebug( T42Qt6MathJaxDebug ) << "renderProcessTerminated: " << terminationStatus << exitCode; } );
-            connect( fView, &QWebEngineView::selectionChanged, [ = ]() { qCDebug( T42Qt6MathJaxDebug ) << "selectionChanged: "; } );
-            connect( fView, &QWebEngineView::titleChanged, [ = ]( const QString &title ) { qCDebug( T42Qt6MathJaxDebug ) << "titleChanged: " << title; } );
-            connect( fView, &QWebEngineView::urlChanged, [ = ]( const QUrl &url ) { qCDebug( T42Qt6MathJaxDebug ) << "url changed: " << url; } );
+            connect( fView, &QWebEngineView::iconChanged, [ = ]( const QIcon &icon ) { qCDebug( T42MathJaxQt6Debug ) << "iconChanged" << icon; } );
+            connect( fView, &QWebEngineView::iconUrlChanged, [ = ]( const QUrl &url ) { qCDebug( T42MathJaxQt6Debug ) << "iconUrlChanged: " << url; } );
+            connect( fView, &QWebEngineView::loadFinished, [ = ]( bool status ) { qCInfo( T42MathJaxQt6 ) << "Load Finished: " << ( status ? "Successful" : "Failed" ); } );
+            connect( fView, &QWebEngineView::loadProgress, [ = ]( int progress ) { qCInfo( T42MathJaxQt6 ) << "Load Progress: " << progress; } );
+            connect( fView, &QWebEngineView::loadStarted, [ = ]() { qCInfo( T42MathJaxQt6 ) << "Load Started: "; } );
+            connect( fView, &QWebEngineView::pdfPrintingFinished, [ = ]( const QString &filePath, bool success ) { qCDebug( T42MathJaxQt6Debug ) << "PDF Print Finished: " << filePath << success; } );
+            connect( fView, &QWebEngineView::printFinished, [ = ]( bool success ) { qCDebug( T42MathJaxQt6Debug ) << "Print Finished: " << success; } );
+            connect( fView, &QWebEngineView::printRequested, [ = ]() { qCDebug( T42MathJaxQt6Debug ) << "Print Requested: "; } );
+            connect( fView, &QWebEngineView::printRequestedByFrame, [ = ]( QWebEngineFrame frame ) { qCDebug( T42MathJaxQt6Debug ) << "Print Requested by Frame: " << frame.name(); } );
+            connect( fView, &QWebEngineView::renderProcessTerminated, [ = ]( QWebEnginePage::RenderProcessTerminationStatus terminationStatus, int exitCode ) { qCDebug( T42MathJaxQt6Debug ) << "renderProcessTerminated: " << terminationStatus << exitCode; } );
+            connect( fView, &QWebEngineView::selectionChanged, [ = ]() { qCDebug( T42MathJaxQt6Debug ) << "selectionChanged: "; } );
+            connect( fView, &QWebEngineView::titleChanged, [ = ]( const QString &title ) { qCDebug( T42MathJaxQt6Debug ) << "titleChanged: " << title; } );
+            connect( fView, &QWebEngineView::urlChanged, [ = ]( const QUrl &url ) { qCDebug( T42MathJaxQt6Debug ) << "url changed: " << url; } );
         }
 
-        QWebEngineView *CQt6MathJax::webEngineView() const
+        QWebEngineView *CMathJaxQt6::webEngineView() const
         {
             return fView;
         }
 
-        std::optional< QByteArray > CQt6MathJax::beenCreated( const QString &texCode ) const
+        std::optional< QByteArray > CMathJaxQt6::beenCreated( const QString &texCode ) const
         {
             auto cleanedFormula = cleanupFormula( texCode );
             auto pos = fSVGCache.find( cleanedFormula );
@@ -184,7 +184,7 @@ namespace NTowel42
             return ( *pos ).second;
         }
 
-        void CQt6MathJax::clearCache( const QString &texCode )
+        void CMathJaxQt6::clearCache( const QString &texCode )
         {
             QString cleanedFormula = cleanupFormula( texCode );
             auto pos = fSVGCache.find( cleanedFormula );
@@ -193,23 +193,23 @@ namespace NTowel42
             fSVGCache.erase( pos );
         }
 
-        void CQt6MathJax::addToCache( const QString &texCode, const std::optional< QString > &cleanedTexCode, const QByteArray &svg )
+        void CMathJaxQt6::addToCache( const QString &texCode, const std::optional< QString > &cleanedTexCode, const QByteArray &svg )
         {
             addToCache( SQueuedRequests( texCode, cleanedTexCode ), svg );
         }
 
-        void CQt6MathJax::addToCache( const SQueuedRequests &request, const QByteArray &svg )
+        void CMathJaxQt6::addToCache( const SQueuedRequests &request, const QByteArray &svg )
         {
             fSVGCache[ request.fClean ] = svg;
             fSVGCache[ request.fOrig ] = svg;
         }
 
-        void CQt6MathJax::renderSVG( const QString &texCode )
+        void CMathJaxQt6::renderSVG( const QString &texCode )
         {
             renderSVG( texCode, {}, {} );
         }
 
-        void CQt6MathJax::renderSVG( const QString &texCode, const std::function< void( const QString &tex, const std::optional< QByteArray > &svg ) > &postRenderFunction, const std::function< void( const QString &msg ) > &onErrorMessage )
+        void CMathJaxQt6::renderSVG( const QString &texCode, const std::function< void( const QString &tex, const std::optional< QByteArray > &svg ) > &postRenderFunction, const std::function< void( const QString &msg ) > &onErrorMessage )
         {
             auto cachedValue = beenCreated( texCode );
             if ( cachedValue.has_value() )
@@ -235,17 +235,17 @@ namespace NTowel42
                     postRenderFunction( tex, svg );
                     parent()->blockSignals( false );
                 };
-                connect( this, &CQt6MathJax::sigSVGRendered, lambda );
+                connect( this, &CMathJaxQt6::sigSVGRendered, lambda );
                 if ( onErrorMessage )
-                    connect( this, &CQt6MathJax::sigErrorMessage, onErrorMessage );
+                    connect( this, &CMathJaxQt6::sigErrorMessage, onErrorMessage );
             }
 
-            QTimer::singleShot( 0, this, &CQt6MathJax::slotRenderNextInQueue );
+            QTimer::singleShot( 0, this, &CMathJaxQt6::slotRenderNextInQueue );
 
             if ( postRenderFunction )
             {
                 QEventLoop loop;
-                QObject::connect( this, &CQt6MathJax::sigRenderingFinished, &loop, &QEventLoop::quit );
+                QObject::connect( this, &CMathJaxQt6::sigRenderingFinished, &loop, &QEventLoop::quit );
                 loop.exec();
                 if ( !rendered )
                 {
@@ -255,7 +255,7 @@ namespace NTowel42
             }
         }
 
-        bool CQt6MathJax::checkQueue( const QString &texCode )
+        bool CMathJaxQt6::checkQueue( const QString &texCode )
         {
             auto cleanedFormula = cleanupFormula( texCode );
             for ( auto &&ii = fQueue.begin(); ii != fQueue.end(); ++ii )
@@ -264,11 +264,11 @@ namespace NTowel42
                 {
                     if ( ii == fQueue.begin() )   // currently being processed
                     {
-                        qCInfo( T42Qt6MathJax ) << "Formula: '" << cleanedFormula << "' already in queue and currently being processed.";
+                        qCInfo( T42MathJaxQt6 ) << "Formula: '" << cleanedFormula << "' already in queue and currently being processed.";
                     }
                     else
                     {
-                        qCInfo( T42Qt6MathJax ) << "Formula: '" << cleanedFormula << "' already in queue being moved to the next to be processed.";
+                        qCInfo( T42MathJaxQt6 ) << "Formula: '" << cleanedFormula << "' already in queue being moved to the next to be processed.";
                         auto curr = *ii;
                         fQueue.erase( ii );
                         fQueue.insert( std::next( fQueue.begin() ), curr );
@@ -279,7 +279,7 @@ namespace NTowel42
             return false;
         }
 
-        void CQt6MathJax::slotRenderNextInQueue()
+        void CMathJaxQt6::slotRenderNextInQueue()
         {
             if ( fQueue.empty() )
                 return;
@@ -289,18 +289,18 @@ namespace NTowel42
                 // still loading
                 if ( errorMessage().isEmpty() )
                 {
-                    QTimer::singleShot( 200, this, &CQt6MathJax::slotRenderNextInQueue );
+                    QTimer::singleShot( 200, this, &CMathJaxQt6::slotRenderNextInQueue );
                 }
                 return;
             }
 
             if ( fRunning )
             {
-                QTimer::singleShot( 200, this, &CQt6MathJax::slotRenderNextInQueue );
+                QTimer::singleShot( 200, this, &CMathJaxQt6::slotRenderNextInQueue );
                 return;
             }
 
-            qCInfo( T42Qt6MathJax ) << "Formulas in Queue: " << fQueue.size();
+            qCInfo( T42MathJaxQt6 ) << "Formulas in Queue: " << fQueue.size();
 
             fRunning = true;
             fLastError = QString();
@@ -313,17 +313,17 @@ namespace NTowel42
             page()->runJavaScript( codeToRun );
         }
 
-        void CQt6MathJax::renderingFinished()
+        void CMathJaxQt6::renderingFinished()
         {
             fRunning = false;
             emit sigRenderingFinished();
             if ( !fQueue.empty() )
                 fQueue.pop_front();
             if ( !fQueue.empty() )
-                QTimer::singleShot( 0, this, &CQt6MathJax::slotRenderNextInQueue );
+                QTimer::singleShot( 0, this, &CMathJaxQt6::slotRenderNextInQueue );
         }
 
-        void CQt6MathJax::errorMessage( const QVariant &msg )
+        void CMathJaxQt6::errorMessage( const QVariant &msg )
         {
             fLastError = msg.toString();
             emit sigErrorMessage( fLastError );
@@ -405,9 +405,9 @@ namespace NTowel42
             return retVal;
         }
 
-        void CQt6MathJax::svgRendered( const QVariant &value )
+        void CMathJaxQt6::svgRendered( const QVariant &value )
         {
-            qCDebug( T42Qt6MathJaxDebug ) << "Variant:" << value;
+            qCDebug( T42MathJaxQt6Debug ) << "Variant:" << value;
 
             // orig has html improperly inside quotes
             auto orig = value.toString();
@@ -415,7 +415,7 @@ namespace NTowel42
             auto svg = validateXML( origEOL.toUtf8() );
             if ( svg.has_value() )
             {
-                qCDebug( T42Qt6MathJaxDebug ) << "SVG:" << svg.value();
+                qCDebug( T42MathJaxQt6Debug ) << "SVG:" << svg.value();
                 addToCache( fQueue.front(), svg.value() );
                 emit sigSVGRendered( fQueue.front().fOrig, svg.value() );
                 if ( fQueue.front().fOrig != fQueue.front().fClean )
@@ -427,7 +427,7 @@ namespace NTowel42
             }
         };
 
-        void CQt6MathJax::setEngineReady( bool aOK )
+        void CMathJaxQt6::setEngineReady( bool aOK )
         {
             fEngineReady = aOK;
             if ( fEngineReady )
@@ -435,12 +435,12 @@ namespace NTowel42
             emit sigEngineReady( fEngineReady );
         };
 
-        QString CQt6MathJax::errorMessage() const
+        QString CMathJaxQt6::errorMessage() const
         {
             return fLastError;
         }
 
-        void CQt6MathJax::slotLoadingChanged( const QWebEngineLoadingInfo &loadingInfo )
+        void CMathJaxQt6::slotLoadingChanged( const QWebEngineLoadingInfo &loadingInfo )
         {
             fEngineReady = false;
             switch ( loadingInfo.status() )
@@ -471,89 +471,89 @@ namespace NTowel42
             };
         }
 
-        QWebEnginePage *CQt6MathJax::page()
+        QWebEnginePage *CMathJaxQt6::page()
         {
             return fView ? fView->page() : nullptr;
         }
     }
 
-    CQt6MathJax::CQt6MathJax( QObject *parent ) :
+    CMathJaxQt6::CMathJaxQt6( QObject *parent ) :
         QObject( parent )
     {
         initResources();
-        fImpl = new NPrivate::CQt6MathJax( this );
-        connect( fImpl, &NPrivate::CQt6MathJax::sigEngineReady, this, &CQt6MathJax::sigEngineReady );
-        connect( fImpl, &NPrivate::CQt6MathJax::sigErrorMessage, this, &CQt6MathJax::sigErrorMessage );
-        connect( fImpl, &NPrivate::CQt6MathJax::sigSVGRendered, this, &CQt6MathJax::sigSVGRendered );
+        fImpl = new NPrivate::CMathJaxQt6( this );
+        connect( fImpl, &NPrivate::CMathJaxQt6::sigEngineReady, this, &CMathJaxQt6::sigEngineReady );
+        connect( fImpl, &NPrivate::CMathJaxQt6::sigErrorMessage, this, &CMathJaxQt6::sigErrorMessage );
+        connect( fImpl, &NPrivate::CMathJaxQt6::sigSVGRendered, this, &CMathJaxQt6::sigSVGRendered );
     }
 
-    CQt6MathJax::~CQt6MathJax()
+    CMathJaxQt6::~CMathJaxQt6()
     {
     }
-    void CQt6MathJax::renderSVG( const QString &texCode )
+    void CMathJaxQt6::renderSVG( const QString &texCode )
     {
         fImpl->renderSVG( texCode );
     }
 
-    void CQt6MathJax::renderSVG( const QString &texCode, const std::function< void( const QString &texCode, const std::optional< QByteArray > &svg ) > &function, const std::function< void( const QString &msg ) > &onErrorMessage )
+    void CMathJaxQt6::renderSVG( const QString &texCode, const std::function< void( const QString &texCode, const std::optional< QByteArray > &svg ) > &function, const std::function< void( const QString &msg ) > &onErrorMessage )
     {
         blockSignals( true );
         fImpl->renderSVG( texCode, function, onErrorMessage );
     }
 
-    void CQt6MathJax::slotRenderSVG( const QString &texCode )
+    void CMathJaxQt6::slotRenderSVG( const QString &texCode )
     {
         renderSVG( texCode );
     }
 
-    void CQt6MathJax::addToCache( const QString &texCode, const std::optional< QString > &cleanedTexCode, const QByteArray &svg )
+    void CMathJaxQt6::addToCache( const QString &texCode, const std::optional< QString > &cleanedTexCode, const QByteArray &svg )
     {
         fImpl->addToCache( texCode, cleanedTexCode, svg );
     }
 
-    bool CQt6MathJax::beenCreated( const QString &texCode ) const
+    bool CMathJaxQt6::beenCreated( const QString &texCode ) const
     {
         return fImpl->beenCreated( texCode ).has_value();
     }
 
-    void CQt6MathJax::clearCache( const QString &texCode )
+    void CMathJaxQt6::clearCache( const QString &texCode )
     {
         return fImpl->clearCache( texCode );
     }
 
-    QString CQt6MathJax::errorMessage() const
+    QString CMathJaxQt6::errorMessage() const
     {
         return fImpl->errorMessage();
     }
 
-    bool CQt6MathJax::hasError() const
+    bool CMathJaxQt6::hasError() const
     {
         return !errorMessage().isEmpty();
     }
 
-    bool CQt6MathJax::engineReady() const
+    bool CMathJaxQt6::engineReady() const
     {
         return fImpl->setEngineReady();
     }
 
-    QWebEngineView *CQt6MathJax::webEngineView() const
+    QWebEngineView *CMathJaxQt6::webEngineView() const
     {
         return fImpl->webEngineView();
     }
 
-    QWidget *CQt6MathJax::webEngineViewWidget() const
+    QWidget *CMathJaxQt6::webEngineViewWidget() const
     {
         return webEngineView();
     }
 
-    void CQt6MathJax::enableDebugConsole( int port )
+    void CMathJaxQt6::enableDebugConsole( int port )
     {
         qputenv( "QTWEBENGINE_REMOTE_DEBUGGING", QString::number( port ).toUtf8() );
         QDesktopServices::openUrl( QUrl( "http://127.0.0.1:12345" ) );
     }
 
-    void CQt6MathJax::initResources()
+    void CMathJaxQt6::initResources()
     {
-        Q_INIT_RESOURCE( Qt6MathJax );
+        Q_INIT_RESOURCE( MathJaxQt6 );
     }
 }

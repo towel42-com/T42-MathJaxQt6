@@ -1,30 +1,30 @@
 #ifndef QT6MATHJAX_H
 #define QT6MATHJAX_H
 
-#include "T42Qt6MathJaxExport.h"
+#include "MathJaxQt6Export.h"
 
 #include <QObject>
 #include <QLoggingCategory>
 
 class QWebEngineView;
 
-T42QT6MATHJAX_EXPORT Q_DECLARE_LOGGING_CATEGORY( T42Qt6MathJax );
-T42QT6MATHJAX_EXPORT Q_DECLARE_LOGGING_CATEGORY( T42Qt6MathJaxConsole );
-T42QT6MATHJAX_EXPORT Q_DECLARE_LOGGING_CATEGORY( T42Qt6MathJaxQRC );
-T42QT6MATHJAX_EXPORT Q_DECLARE_LOGGING_CATEGORY( T42Qt6MathJaxDebug );
+T42MATHJAXQT6_EXPORT Q_DECLARE_LOGGING_CATEGORY( T42MathJaxQt6 );
+T42MATHJAXQT6_EXPORT Q_DECLARE_LOGGING_CATEGORY( T42MathJaxQt6Console );
+T42MATHJAXQT6_EXPORT Q_DECLARE_LOGGING_CATEGORY( T42MathJaxQt6QRC );
+T42MATHJAXQT6_EXPORT Q_DECLARE_LOGGING_CATEGORY( T42MathJaxQt6Debug );
 
 namespace NTowel42
 {
     namespace NPrivate
     {
-        class CQt6MathJax;
+        class CMathJaxQt6;
     }
-    class T42QT6MATHJAX_EXPORT CQt6MathJax : public QObject
+    class T42MATHJAXQT6_EXPORT CMathJaxQt6 : public QObject
     {
         Q_OBJECT
     public:
-        CQt6MathJax( QObject *parent = nullptr );
-        ~CQt6MathJax();
+        CMathJaxQt6( QObject *parent = nullptr );
+        ~CMathJaxQt6();
 
         // async computation of the svg
         void renderSVG( const QString &texCode );
@@ -57,10 +57,10 @@ namespace NTowel42
         void sigSVGRendered( const QString &tex, const QByteArray &svg );
 
     private:
-        NPrivate::CQt6MathJax *fImpl{ nullptr };
+        NPrivate::CMathJaxQt6 *fImpl{ nullptr };
     };
 
-    T42QT6MATHJAX_EXPORT QString cleanupFormula( QString texCode );
+    T42MATHJAXQT6_EXPORT QString cleanupFormula( QString texCode );
 }
 
 #endif

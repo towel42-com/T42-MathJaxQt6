@@ -25,13 +25,13 @@
 #include <qglobal.h>
 
 #if defined( WINDOWS ) || defined( WIN32 ) || defined( Q_OS_WINDOWS )
-    #ifdef T42QT6MATHJAX_EXPORTS
-        #define T42QT6MATHJAX_EXPORT Q_DECL_EXPORT
+    #ifdef T42MATHJAXQT6_EXPORTS
+        #define T42MATHJAXQT6_EXPORT Q_DECL_EXPORT
     #else
-        #define T42QT6MATHJAX_EXPORT Q_DECL_IMPORT
+        #define T42MATHJAXQT6_EXPORT Q_DECL_IMPORT
     #endif
 #else
-    #define T42QT6MATHJAX_EXPORT
+    #define T42MATHJAXQT6_EXPORT
 #endif
 
 #endif

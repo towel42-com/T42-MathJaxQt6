@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 cmake_minimum_required(VERSION 3.22)
-project(Qt6MathJax-GUIExample) 
+project(MathJaxQt6-GUIExample) 
 
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui WebEngineWidgets SvgWidgets )
 include( include.cmake )
@@ -37,7 +37,7 @@ set ( DEBUG_PATH
         )
 
 set_target_properties( ${PROJECT_NAME} PROPERTIES 
-        FOLDER T42-Qt6MathJax
+        FOLDER Apps/MathJaxQt6
         VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:${PROJECT_NAME}>" 
         VS_DEBUGGER_COMMAND "$<TARGET_FILE:${PROJECT_NAME}>" 
         VS_DEBUGGER_ENVIRONMENT "PATH=${DEBUG_PATH}" 
@@ -51,7 +51,7 @@ target_link_libraries( ${PROJECT_NAME}
           ${project_pri_DEPS}
 )
 
-DeployQt( ${PROJECT_NAME} . EXTRA_TARGETS T42Qt6MathJax )
+DeployQt( ${PROJECT_NAME} . EXTRA_TARGETS MathJaxQt6 )
 DeploySystem( ${PROJECT_NAME} . INSTALL_ONLY 1 )
 
 INSTALL( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin )

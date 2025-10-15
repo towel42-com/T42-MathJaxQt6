@@ -19,5 +19,5 @@ set(qtproject_QRC
         Qt6::Widgets
         Qt6::Core
         Qt6::WebEngineWidgets
-        T42Qt6MathJax
+        MathJaxQt6
 )

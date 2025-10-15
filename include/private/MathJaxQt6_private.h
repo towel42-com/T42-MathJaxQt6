@@ -17,7 +17,7 @@ class QWebChannel;
 
 namespace NTowel42
 {
-    class CQt6MathJax;
+    class CMathJaxQt6;
     namespace NPrivate
     {
         class CWebEnginePage_WConsoleLog : public QWebEnginePage
@@ -41,14 +41,14 @@ namespace NTowel42
             QString fClean;
         };
 
-        class CQt6MathJax : public QObject
+        class CMathJaxQt6 : public QObject
         {
             Q_OBJECT
         public:
-            CQt6MathJax( NTowel42::CQt6MathJax *parent );
+            CMathJaxQt6( NTowel42::CMathJaxQt6 *parent );
 
         public:
-            ~CQt6MathJax();
+            ~CMathJaxQt6();
 
             void renderSVG( const QString &code );
             void renderSVG( const QString &texCode, const std::function< void( const QString &tex, const std::optional< QByteArray > &svg ) > &function, const std::function< void( const QString &msg ) > &onErrorMessage );

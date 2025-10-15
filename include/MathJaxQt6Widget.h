@@ -1,7 +1,7 @@
 #ifndef MATHJAXWIDGET_H
 #define MATHJAXWIDGET_H
 
-#include "T42-Qt6MathJax/include/T42Qt6MathJaxExport.h"
+#include "T42-Qt6MathJax/include/MathJaxQt6Export.h"
 
 #include <QGroupBox>
 #include <QByteArray>
@@ -15,25 +15,25 @@ class QWheelEvent;
 
 namespace NTowel42
 {
-    class CQt6MathJax;
+    class CMathJaxQt6;
 
     namespace Ui
     {
-        class CMathJaxWidget;
+        class CMathJaxQt6Widget;
     }
 
-    class T42QT6MATHJAX_EXPORT CMathJaxWidget : public QGroupBox
+    class T42MATHJAXQT6_EXPORT CMathJaxQt6Widget : public QGroupBox
     {
         Q_OBJECT
 
     public:
-        explicit CMathJaxWidget( QWidget *parent = nullptr );
-        explicit CMathJaxWidget( const QString &title, QWidget *parent = nullptr );
+        explicit CMathJaxQt6Widget( QWidget *parent = nullptr );
+        explicit CMathJaxQt6Widget( const QString &title, QWidget *parent = nullptr );
 
-        ~CMathJaxWidget();
+        ~CMathJaxQt6Widget();
 
         void setTitle( const QString &title );
-        void setEngine( NTowel42::CQt6MathJax *engine );
+        void setEngine( NTowel42::CMathJaxQt6 *engine );
 
         void setFormula( const std::optional< QString > &formula );
         void setFormulaAndWait( const QString &formula );
@@ -41,8 +41,8 @@ namespace NTowel42
 
         bool isFormula( const std::optional< QString > &formula ) const;
 
-        void setSubordinateTo( CMathJaxWidget *controllingWidget );
-        void setSubordinateTo( const std::list< CMathJaxWidget * > &controllingWidgets );
+        void setSubordinateTo( CMathJaxQt6Widget *controllingWidget );
+        void setSubordinateTo( const std::list< CMathJaxQt6Widget * > &controllingWidgets );
 
         static double numFormulas( const QString &tex );
 
@@ -78,9 +78,9 @@ namespace NTowel42
         int fPixelHeightPerFormula{ 200 };
         double fMinScale{ 0.0125 };
         double fScale{ 1.0 };
-        std::list< CMathJaxWidget * > fControllingWidgets;
+        std::list< CMathJaxQt6Widget * > fControllingWidgets;
 
-        NTowel42::CQt6MathJax *fEngine{ nullptr };
+        NTowel42::CMathJaxQt6 *fEngine{ nullptr };
 
         QScrollArea *fScrollArea{ nullptr };
         QSvgWidget *fSVGWidget{ nullptr };

@@ -1,5 +1,5 @@
-#include "include/MathJaxWidget.h"
-#include "include/Qt6MathJax.h"
+#include "include/MathJaxQt6Widget.h"
+#include "include/MathJaxQt6.h"
 
 #include <QSvgRenderer>
 #include <QRegularExpression>
@@ -17,12 +17,12 @@
 
 namespace NTowel42
 {
-    CMathJaxWidget::CMathJaxWidget( QWidget *parent ) :
-        CMathJaxWidget( {}, parent )
+    CMathJaxQt6Widget::CMathJaxQt6Widget( QWidget *parent ) :
+        CMathJaxQt6Widget( {}, parent )
     {
     }
 
-    CMathJaxWidget::CMathJaxWidget( const QString &title, QWidget *parent ) :
+    CMathJaxQt6Widget::CMathJaxQt6Widget( const QString &title, QWidget *parent ) :
         QGroupBox( title, parent ),
         fEngine( nullptr )
     {
@@ -57,11 +57,11 @@ namespace NTowel42
         updateMinimumHeight();
     }
 
-    CMathJaxWidget::~CMathJaxWidget()
+    CMathJaxQt6Widget::~CMathJaxQt6Widget()
     {
     }
 
-    void CMathJaxWidget::wheelEvent( QWheelEvent *event )
+    void CMathJaxQt6Widget::wheelEvent( QWheelEvent *event )
     {
         if ( event->modifiers() == Qt::ControlModifier )
         {
@@ -71,18 +71,18 @@ namespace NTowel42
             QGroupBox::wheelEvent( event );
     }
 
-    void CMathJaxWidget::clear()
+    void CMathJaxQt6Widget::clear()
     {
         fSVGWidget->load( QByteArray() );
         setVisible( false );
     }
 
-    void CMathJaxWidget::setTitle( const QString &title )
+    void CMathJaxQt6Widget::setTitle( const QString &title )
     {
         QGroupBox::setTitle( title );
     }
 
-    bool CMathJaxWidget::isFormula( const std::optional< QString > &formula ) const
+    bool CMathJaxQt6Widget::isFormula( const std::optional< QString > &formula ) const
     {
         if ( !formula.has_value() )
         {
@@ -97,7 +97,7 @@ namespace NTowel42
         return fFormula.value() == formula.value();
     }
 
-    void CMathJaxWidget::loadSVG( const QByteArray &svg )
+    void CMathJaxQt6Widget::loadSVG( const QByteArray &svg )
     {
         if ( controllersHaveFormula( fFormula ) )
         {
@@ -120,7 +120,7 @@ namespace NTowel42
         }
     }
 
-    double CMathJaxWidget::numFormulas( const QString &tex )
+    double CMathJaxQt6Widget::numFormulas( const QString &tex )
     {
         auto innerRegex = QRegularExpression( QString( R"__(\\newline)__" ) );
         auto regex = QRegularExpression( QString( R"__((\\newline)+)__" ) );
@@ -146,7 +146,7 @@ namespace NTowel42
         return retVal;
     }
 
-    void CMathJaxWidget::resizeEvent( QResizeEvent * /*event*/ )
+    void CMathJaxQt6Widget::resizeEvent( QResizeEvent * /*event*/ )
     {
         autoScale();
     }
@@ -159,7 +159,7 @@ namespace NTowel42
         return scale;
     };
 
-    double CMathJaxWidget::autoScale()
+    double CMathJaxQt6Widget::autoScale()
     {
         if ( !fSVGWidget->renderer()->isValid() )
             return 1.0;
@@ -177,7 +177,7 @@ namespace NTowel42
         return 1.0;
     }
 
-    void CMathJaxWidget::setScale( double newScale )
+    void CMathJaxQt6Widget::setScale( double newScale )
     {
         auto svgSize = idealSVGSize();
         auto scale = computeScale( svgSize, svgDefaultSize() );
@@ -190,54 +190,54 @@ namespace NTowel42
 
         update();
     }
-    QSize CMathJaxWidget::minimumSizeHint() const
+    QSize CMathJaxQt6Widget::minimumSizeHint() const
     {
         return { 100, fPixelHeightPerFormula + fScrollBarSize * 2 };
     }
 
-    void CMathJaxWidget::slotSVGRendered( const QString &formula, const QByteArray &svg )
+    void CMathJaxQt6Widget::slotSVGRendered( const QString &formula, const QByteArray &svg )
     {
         if ( !isFormula( formula ) )
             return;
         loadSVG( svg );
     }
 
-    void CMathJaxWidget::slotSetPixelsPerFormula( int pixelsPerFormula )
+    void CMathJaxQt6Widget::slotSetPixelsPerFormula( int pixelsPerFormula )
     {
         fPixelHeightPerFormula = pixelsPerFormula;
         updateMinimumHeight();
         autoScale();
     }
 
-    void CMathJaxWidget::updateMinimumHeight()
+    void CMathJaxQt6Widget::updateMinimumHeight()
     {
         setMinimumSize( 10, fPixelHeightPerFormula + fScrollBarSize * 2 );
     }
 
-    void CMathJaxWidget::slotSetMinScale( double minScale )
+    void CMathJaxQt6Widget::slotSetMinScale( double minScale )
     {
         fMinScale = minScale;
         autoScale();
     }
 
-    void CMathJaxWidget::setEngine( NTowel42::CQt6MathJax *engine )
+    void CMathJaxQt6Widget::setEngine( NTowel42::CMathJaxQt6 *engine )
     {
         fEngine = engine;
-        connect( fEngine, &NTowel42::CQt6MathJax::sigSVGRendered, this, &CMathJaxWidget::slotSVGRendered );
-        connect( fEngine, &NTowel42::CQt6MathJax::sigErrorMessage, this, &CMathJaxWidget::sigErrorMessage );
+        connect( fEngine, &NTowel42::CMathJaxQt6::sigSVGRendered, this, &CMathJaxQt6Widget::slotSVGRendered );
+        connect( fEngine, &NTowel42::CMathJaxQt6::sigErrorMessage, this, &CMathJaxQt6Widget::sigErrorMessage );
     }
 
-    void CMathJaxWidget::setSubordinateTo( const std::list< CMathJaxWidget * > &controllingWidgets )
+    void CMathJaxQt6Widget::setSubordinateTo( const std::list< CMathJaxQt6Widget * > &controllingWidgets )
     {
         fControllingWidgets = controllingWidgets;
     }
 
-    void CMathJaxWidget::setSubordinateTo( CMathJaxWidget *controllingWidget )
+    void CMathJaxQt6Widget::setSubordinateTo( CMathJaxQt6Widget *controllingWidget )
     {
-        setSubordinateTo( std::list< CMathJaxWidget * >( { controllingWidget } ) );
+        setSubordinateTo( std::list< CMathJaxQt6Widget * >( { controllingWidget } ) );
     }
 
-    bool CMathJaxWidget::controllersHaveFormula( const std::optional< QString > &formula ) const
+    bool CMathJaxQt6Widget::controllersHaveFormula( const std::optional< QString > &formula ) const
     {
         for ( auto &&ii : fControllingWidgets )
         {
@@ -247,7 +247,7 @@ namespace NTowel42
         return false;
     }
 
-    void CMathJaxWidget::setFormula( const std::optional< QString > &formula )
+    void CMathJaxQt6Widget::setFormula( const std::optional< QString > &formula )
     {
         Q_ASSERT( fEngine );
 
@@ -270,7 +270,7 @@ namespace NTowel42
         }
     }
 
-    void CMathJaxWidget::setFormulaAndWait( const QString &formula )
+    void CMathJaxQt6Widget::setFormulaAndWait( const QString &formula )
     {
         Q_ASSERT( fEngine );
 
@@ -296,14 +296,14 @@ namespace NTowel42
             } );
     }
 
-    int CMathJaxWidget::computePerfectHeight() const
+    int CMathJaxQt6Widget::computePerfectHeight() const
     {
         auto numFormulas = this->numFormulas( fFormula.value() );
         auto perfectHeight = ( fPixelHeightPerFormula * numFormulas ) - 2 * fScrollBarSize;
         return perfectHeight;
     }
 
-    QSize CMathJaxWidget::idealSVGSize() const
+    QSize CMathJaxQt6Widget::idealSVGSize() const
     {
         auto parentWidget = fScrollArea->viewport();
         auto parentSize = parentWidget->size();
@@ -312,7 +312,7 @@ namespace NTowel42
         return svgDefaultSize().scaled( scaleToSize, Qt::AspectRatioMode::KeepAspectRatio );
     }
 
-    QSize CMathJaxWidget::svgDefaultSize() const
+    QSize CMathJaxQt6Widget::svgDefaultSize() const
     {
         return fSVGWidget->renderer()->defaultSize();
     }

@@ -21,18 +21,18 @@
 # SOFTWARE.
 
 set(qtproject_SRCS
-    Qt6MathJax.cpp
-    MathJaxWidget.cpp
+    MathJaxQt6.cpp
+    MathJaxQt6Widget.cpp
 )
 
 set(qtproject_H
-    ../include/Qt6MathJax.h
-    ../include/private/Qt6MathJax_private.h
-    ../include/MathJaxWidget.h
+    ../include/MathJaxQt6.h
+    ../include/private/MathJaxQt6_private.h
+    ../include/MathJaxQt6Widget.h
 )
 
 set(project_H
-    ../include/T42Qt6MathJaxExport.h
+    ../include/MathJaxQt6Export.h
 )
 
 set(qtproject_UIS

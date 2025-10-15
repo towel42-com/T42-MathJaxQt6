@@ -1,6 +1,6 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
-#include "include/Qt6MathJax.h"
+#include "include/MathJaxQt6.h"
 
 #include <QWebEngineView>
 #include <QWebEnginePage>
@@ -14,15 +14,15 @@ CMainWindow::CMainWindow( QWidget *parent ) :
     QMainWindow( parent ),
     fImpl( new Ui::CMainWindow )
 {
-    NTowel42::CQt6MathJax::enableDebugConsole( 12345 );
-    QLoggingCategory::setFilterRules( ( QStringList() << "*=false" << "js=true" << "Towel42.Qt6MathJax=true" << "Towel42.Qt6MathJax.*=true" ).join( "\n" ) );
-    fEngine = new NTowel42::CQt6MathJax;
+    NTowel42::CMathJaxQt6::enableDebugConsole( 12345 );
+    QLoggingCategory::setFilterRules( ( QStringList() << "*=false" << "js=true" << "Towel42.MathJaxQt6=true" << "Towel42.MathJaxQt6.*=true" ).join( "\n" ) );
+    fEngine = new NTowel42::CMathJaxQt6;
 
     fImpl->setupUi( this );
 
     fImpl->mathJaxWidget->setEngine( fEngine );
     fImpl->mathJaxWidget->slotSetPixelsPerFormula( fImpl->pixelsPerFormula->value() );
-    connect( fImpl->mathJaxWidget, &NTowel42::CMathJaxWidget::sigErrorMessage, this, &CMainWindow::slotErrorMessage );
+    connect( fImpl->mathJaxWidget, &NTowel42::CMathJaxQt6Widget::sigErrorMessage, this, &CMainWindow::slotErrorMessage );
 
     fImpl->lineEdit->setText( R"__(x = {-b \pm \sqrt{b^2-4ac} \over 2a})__" );
     fImpl->webEngineViewLayout->addWidget( fEngine->webEngineViewWidget() );
@@ -41,8 +41,8 @@ CMainWindow::CMainWindow( QWidget *parent ) :
     fImpl->asyncRender->setEnabled( false );
     fImpl->syncRender->setEnabled( false );
 
-    connect( fEngine, &NTowel42::CQt6MathJax::sigEngineReady, this, &CMainWindow::slotEngineReady );
-    connect( fImpl->pixelsPerFormula, &QSpinBox::valueChanged, fImpl->mathJaxWidget, &NTowel42::CMathJaxWidget::slotSetPixelsPerFormula );
+    connect( fEngine, &NTowel42::CMathJaxQt6::sigEngineReady, this, &CMainWindow::slotEngineReady );
+    connect( fImpl->pixelsPerFormula, &QSpinBox::valueChanged, fImpl->mathJaxWidget, &NTowel42::CMathJaxQt6Widget::slotSetPixelsPerFormula );
 }
 
 CMainWindow::~CMainWindow()
