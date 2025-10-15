@@ -26,36 +26,9 @@ namespace NTowel42
         QGroupBox( title, parent ),
         fEngine( nullptr )
     {
-        setObjectName( "Towel42_CMathJaxWidget" );
-        setBackgroundRole( QPalette::Light );
-
-        QSizePolicy sizePolicy( QSizePolicy::Policy::MinimumExpanding, QSizePolicy::Policy::MinimumExpanding );
-        sizePolicy.setHorizontalStretch( 0 );
-        sizePolicy.setVerticalStretch( 0 );
-        setSizePolicy( sizePolicy );
-
-        auto hLayout = new QHBoxLayout( this );
-        hLayout->setContentsMargins( 6, 0, 6, 6 );
-        hLayout->setSizeConstraint( QLayout::SetMinimumSize );
-
-        fScrollArea = new QScrollArea( this );
-        fScrollBarSize = fScrollArea->style()->pixelMetric( QStyle::PM_ScrollBarExtent );
-        fScrollArea->setAlignment( Qt::AlignCenter );
-
-        fScrollArea->setSizePolicy( sizePolicy );
-
-        hLayout->addWidget( fScrollArea );
-        fScrollArea->setWidgetResizable( false );
-
-        fSVGWidget = new QSvgWidget( fScrollArea );
-        fScrollArea->setWidget( fSVGWidget );
-        fSVGWidget->setObjectName( "fSVGWidget" );
-        fSVGWidget->setMinimumSize( QSize( 0, 10 ) );
-        fSVGWidget->setBackgroundRole( QPalette::Light );
+        setupUI();
 
         clear();
-        setDefaultMinimumSize();
-        showWidget( false );
     }
 
     CMathJaxQt6Widget::~CMathJaxQt6Widget()
@@ -67,7 +40,7 @@ namespace NTowel42
         if ( event->modifiers() == Qt::ControlModifier )
         {
             qCDebug( T42MathJaxQt6Widget ) << "WheelEvent:";
-            slotSetScale( fScale * qBound( fMinScale, qPow( 1.2, event->angleDelta().y() / 240. ), fMaxScale ) );
+            setScale( fScale * qBound( fMinScale, qPow( 1.2, event->angleDelta().y() / 240. ), fMaxScale ), false );
         }
         else
             QGroupBox::wheelEvent( event );
@@ -76,6 +49,7 @@ namespace NTowel42
     void CMathJaxQt6Widget::clear()
     {
         fSVGWidget->load( QByteArray() );
+        slotSetNumPixelsPerFormula( fNumPixelsPerFormula );
         showWidget();
     }
 
@@ -104,7 +78,7 @@ namespace NTowel42
         showWidget( true );
 
         fSVGWidget->load( svg );
-        if ( !fSVGWidget->renderer()->isValid() )
+        if ( !svgValid() )
         {
             emit sigErrorMessage( tr( "Could not load the SVG file" ) );
         }
@@ -144,12 +118,6 @@ namespace NTowel42
         return retVal;
     }
 
-    void CMathJaxQt6Widget::resizeEvent( QResizeEvent * /*event*/ )
-    {
-        if ( fAutoSizeToParentWidth )
-            autoScale();
-    }
-
     double computeScale( const QSize &lhs, const QSize &rhs )
     {
         auto widthScale = 1.0 * lhs.width() / rhs.width();
@@ -160,7 +128,7 @@ namespace NTowel42
 
     void CMathJaxQt6Widget::autoScale()
     {
-        if ( !fSVGWidget->renderer()->isValid() )
+        if ( !svgValid() )
             return;
 
         auto svgSize = idealSVGSize();
@@ -172,19 +140,18 @@ namespace NTowel42
             scale = fMinScale;
         }
 
-        slotSetScale( scale );
+        setScale( scale, true );
 
         fScrollArea->verticalScrollBar()->setValue( fScrollArea->verticalScrollBar()->maximum() );
         fScrollArea->horizontalScrollBar()->setValue( 0 );
     }
 
-    void CMathJaxQt6Widget::autoSizeParent( bool force )
+    void CMathJaxQt6Widget::autoSizeParent()
     {
-        if ( force || fAutoUpdateMinimumParentSize )
+        if ( fAutoUpdateMinimumParentSize )
         {
+            qCDebug( T42MathJaxQt6Widget ) << "==============================";
             qCDebug( T42MathJaxQt6Widget ) << "Updating Parent Minimum Height";
-            if ( force )
-                qCDebug( T42MathJaxQt6Widget ) << "Forced";
 
             auto svgHeight = fSVGWidget->size().height();
             qCDebug( T42MathJaxQt6Widget ) << "SVG Height: " << svgHeight;
@@ -197,6 +164,12 @@ namespace NTowel42
 
     void CMathJaxQt6Widget::slotSetScale( double newScale )
     {
+        setScale( newScale, true );
+    }
+
+    void CMathJaxQt6Widget::setScale( double newScale, bool updateParentSize )
+    {
+        qCDebug( T42MathJaxQt6Widget ) << "=====================================";
         qCDebug( T42MathJaxQt6Widget ) << "Changing Scale to: " << newScale;
 
         auto svgSize = idealSVGSize();
@@ -217,7 +190,8 @@ namespace NTowel42
 
         fSVGWidget->setFixedSize( svgSize );
 
-        autoSizeParent( false );
+        if ( updateParentSize )
+            autoSizeParent();
 
         update();
     }
@@ -244,11 +218,6 @@ namespace NTowel42
         if ( !isFormula( formula ) )
             return;
         loadSVG( svg );
-    }
-
-    void CMathJaxQt6Widget::setDefaultMinimumSize()
-    {
-        setMinimumSize( 10, fNumPixelsPerFormula + fScrollBarSize * 2 );
     }
 
     void CMathJaxQt6Widget::setEngine( NTowel42::CMathJaxQt6 *engine )
@@ -377,9 +346,8 @@ namespace NTowel42
     bool CMathJaxQt6Widget::showWidget( bool ignoreValid /*=false*/ )
     {
         bool controllersHaveFormula = this->controllersHaveFormula();
-        bool isValid = fSVGWidget->renderer()->isValid();
 
-        bool hide = ignoreValid ? controllersHaveFormula : ( controllersHaveFormula || ( fHideEmptyOrInvalid && !isValid ) );
+        bool hide = ignoreValid ? controllersHaveFormula : ( controllersHaveFormula || ( fHideEmptyOrInvalid && !svgValid() ) );
         setHidden( hide );
         if ( !hide )
             emit sigScaleChanged( fScale );
@@ -389,11 +357,16 @@ namespace NTowel42
     void CMathJaxQt6Widget::slotSetNumPixelsPerFormula( int pixelsPerFormula )
     {
         fNumPixelsPerFormula = pixelsPerFormula;
-        if ( fAutoSizeToParentWidth )
+        if ( fAutoSizeToParentWidth || !fAutoUpdateMinimumParentSize || !svgValid() )
         {
-            setDefaultMinimumSize();
+            setDefaultMinimumHeight();
             autoScale();
         }
+    }
+
+    void CMathJaxQt6Widget::setDefaultMinimumHeight()
+    {
+        setMinimumSize( 10, fNumPixelsPerFormula + heightPadding() );
     }
 
     void CMathJaxQt6Widget::slotSetMinScale( double minScale )
@@ -421,6 +394,41 @@ namespace NTowel42
     {
         fHideEmptyOrInvalid = hideEmptyOrInvalid;
         showWidget();
+    }
+
+    bool CMathJaxQt6Widget::svgValid() const
+    {
+        return fSVGWidget->renderer()->isValid();
+    }
+
+    void CMathJaxQt6Widget::setupUI()
+    {
+        setObjectName( "Towel42_CMathJaxWidget" );
+        setBackgroundRole( QPalette::Light );
+
+        QSizePolicy sizePolicy( QSizePolicy::Policy::MinimumExpanding, QSizePolicy::Policy::MinimumExpanding );
+        sizePolicy.setHorizontalStretch( 0 );
+        sizePolicy.setVerticalStretch( 0 );
+        setSizePolicy( sizePolicy );
+
+        auto hLayout = new QHBoxLayout( this );
+        hLayout->setContentsMargins( 6, 0, 6, 6 );
+        hLayout->setSizeConstraint( QLayout::SetMinimumSize );
+
+        fScrollArea = new QScrollArea( this );
+        fScrollBarSize = fScrollArea->style()->pixelMetric( QStyle::PM_ScrollBarExtent );
+        fScrollArea->setAlignment( Qt::AlignCenter );
+
+        fScrollArea->setSizePolicy( sizePolicy );
+
+        hLayout->addWidget( fScrollArea );
+        fScrollArea->setWidgetResizable( false );
+
+        fSVGWidget = new QSvgWidget( fScrollArea );
+        fScrollArea->setWidget( fSVGWidget );
+        fSVGWidget->setObjectName( "fSVGWidget" );
+        fSVGWidget->setMinimumSize( QSize( 0, 10 ) );
+        fSVGWidget->setBackgroundRole( QPalette::Light );
     }
 
 }

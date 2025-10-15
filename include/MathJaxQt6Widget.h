@@ -58,9 +58,6 @@ namespace NTowel42
         double maxScale() const { return fMaxScale; }
         int numPixelsPerFormula() const { return fNumPixelsPerFormula; }
 
-    public:
-        virtual void resizeEvent( QResizeEvent *event ) override;
-
     Q_SIGNALS:
         void sigErrorMessage( const QString &errorMsg );
         void sigScaleChanged( double scaleValue );
@@ -78,11 +75,16 @@ namespace NTowel42
         void slotSVGRendered( const QString &tex, const QByteArray &svg );
 
     private:
+        void setScale( double newScale, bool updateParentSize );
         bool showWidget( bool ignoreValid = false );
+
+        bool svgValid() const;
+        void setupUI();
+
         int heightPadding() const;
-        void setDefaultMinimumSize();
+        void setDefaultMinimumHeight();
         void autoScale();
-        void autoSizeParent( bool force );
+        void autoSizeParent();
 
         QSize idealSVGSize() const;
         QSize svgDefaultSize() const;
