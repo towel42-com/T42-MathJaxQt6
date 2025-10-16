@@ -100,8 +100,6 @@ namespace NTowel42
         CMathJaxQt6::CMathJaxQt6( NTowel42::CMathJaxQt6 *parent ) :
             QObject( parent )
         {
-            dumpQRC();
-
             QWebEngineUrlScheme qrcScheme( QByteArrayLiteral( "qrc" ) );
             qrcScheme.setFlags( QWebEngineUrlScheme::FetchApiAllowed );
             QWebEngineUrlScheme::registerScheme( qrcScheme );
@@ -490,6 +488,7 @@ namespace NTowel42
     CMathJaxQt6::~CMathJaxQt6()
     {
     }
+
     void CMathJaxQt6::renderSVG( const QString &texCode )
     {
         fImpl->renderSVG( texCode );

@@ -40,7 +40,7 @@ private:
     void clear();
     QLabel *fScaleLabel{ nullptr };
     std::unique_ptr< Ui::CMainWindow > fImpl{};
-    NTowel42::CMathJaxQt6 *fEngine{ nullptr };
+    std::shared_ptr< NTowel42::CMathJaxQt6 > fEngine;
 };
 
 #endif   // MAINWINDOW_H

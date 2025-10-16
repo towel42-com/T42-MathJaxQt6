@@ -3,7 +3,7 @@
 
 #include "T42-MathJaxQt6/include/MathJaxQt6Export.h"
 
-#include <QGroupBox>
+#include <QWidget>
 #include <QByteArray>
 #include <optional>
 #include <list>
@@ -16,24 +16,27 @@ class QWheelEvent;
 namespace NTowel42
 {
     class CMathJaxQt6;
+    class CMathJaxQt6GroupBox;
 
-    namespace Ui
-    {
-        class CMathJaxQt6Widget;
-    }
-
-    class T42MATHJAXQT6_EXPORT CMathJaxQt6Widget : public QGroupBox
+    class T42MATHJAXQT6_EXPORT CMathJaxQt6Widget : public QWidget
     {
         Q_OBJECT
+        Q_PROPERTY( int pixelsPerFormula READ numPixelsPerFormula WRITE slotSetNumPixelsPerFormula )
+        Q_PROPERTY( double minScale READ minScale WRITE slotSetMinScale )
+        Q_PROPERTY( double maxScale READ maxScale WRITE slotSetMaxScale )
+        Q_PROPERTY( double scale READ scale WRITE slotSetScale )
+        Q_PROPERTY( bool autoUpdateMinimumParentHeight READ autoUpdateMinimumParentHeight WRITE slotSetAutoUpdateMinimumParentHeight )
+        Q_PROPERTY( bool hideEmptyOrInvalid READ hideEmptyOrInvalid WRITE slotHideEmptyOrInvalid )
+        Q_PROPERTY( bool autoSizeToParentWidth READ autoSizeToParentWidth WRITE slotSetAutoSizeToParentWidth )
 
     public:
         explicit CMathJaxQt6Widget( QWidget *parent = nullptr );
-        explicit CMathJaxQt6Widget( const QString &title, QWidget *parent = nullptr );
 
         ~CMathJaxQt6Widget();
 
-        void setTitle( const QString &title );
-        void setEngine( NTowel42::CMathJaxQt6 *engine );
+        std::shared_ptr< NTowel42::CMathJaxQt6 > engine() const;
+        std::shared_ptr< NTowel42::CMathJaxQt6 > engine();
+        void setEngine( const std::shared_ptr< NTowel42::CMathJaxQt6 > &engine );
 
         void setFormula( const std::optional< QString > &formula );
         void setFormulaAndWait( const QString &formula );
@@ -46,27 +49,28 @@ namespace NTowel42
 
         static double numFormulas( const QString &tex );
 
-        virtual void wheelEvent( QWheelEvent *event ) override;
-        virtual QSize minimumSizeHint() const override;
-
         double scale() const { return fScale; }
 
-        bool autoUpdateMinimumParentSize() const { return fAutoUpdateMinimumParentSize; }
+        bool autoUpdateMinimumParentHeight() const { return fAutoUpdateMinimumParentHeight; }
         bool hideEmptyOrInvalid() const { return fHideEmptyOrInvalid; }
         bool autoSizeToParentWidth() const { return fAutoSizeToParentWidth; }
         double minScale() const { return fMinScale; }
         double maxScale() const { return fMaxScale; }
         int numPixelsPerFormula() const { return fNumPixelsPerFormula; }
 
+        bool svgValid() const;
+
     Q_SIGNALS:
         void sigErrorMessage( const QString &errorMsg );
         void sigScaleChanged( double scaleValue );
+        void sigEngineReady( bool aOK );
+        void sigSVGRendered( const QString &tex, const QByteArray &svg );
 
     public Q_SLOTS:
         void slotSetNumPixelsPerFormula( int pixelsPerFormula );
         void slotSetMinScale( double minScale );
         void slotSetMaxScale( double maxScale );
-        void slotSetAutoUpdateMinimumParentSize( bool autoUpdateMinimumParentSize );
+        void slotSetAutoUpdateMinimumParentHeight( bool autoUpdateMinimumParentHeight );
         void slotHideEmptyOrInvalid( bool hideEmptyOrInvalid );
         void slotSetAutoSizeToParentWidth( bool autoSizeToParentWidth );
         void slotSetScale( double newScale );
@@ -75,16 +79,21 @@ namespace NTowel42
         void slotSVGRendered( const QString &tex, const QByteArray &svg );
 
     private:
-        void setScale( double newScale, bool updateParentSize );
+        virtual void wheelEvent( QWheelEvent *event ) override;
+        virtual QSize minimumSizeHint() const override;
+
+        void setScale( double newScale, bool updateParentHeight );
         bool showWidget( bool ignoreValid = false );
 
-        bool svgValid() const;
+        void setMathJaxVisible( bool hide );
+        CMathJaxQt6GroupBox * mathJaxGroupBox() const;
+
         void setupUI();
 
         int heightPadding() const;
         void setDefaultMinimumHeight();
         void autoScale();
-        void autoSizeParent();
+        void autoHeightParent();
 
         QSize idealSVGSize() const;
         QSize svgDefaultSize() const;
@@ -102,12 +111,12 @@ namespace NTowel42
         double fMinScale{ 0.0125 };
         double fMaxScale{ 10.0 };
         double fScale{ 1.0 };
-        bool fAutoUpdateMinimumParentSize{ false };
+        bool fAutoUpdateMinimumParentHeight{ false };
         bool fHideEmptyOrInvalid{ false };
         bool fAutoSizeToParentWidth{ false };
 
         std::list< CMathJaxQt6Widget * > fControllingWidgets;
-        NTowel42::CMathJaxQt6 *fEngine{ nullptr };
+        mutable std::shared_ptr< NTowel42::CMathJaxQt6 > fEngine;
 
         QScrollArea *fScrollArea{ nullptr };
         QSvgWidget *fSVGWidget{ nullptr };

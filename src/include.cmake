@@ -23,12 +23,14 @@
 set(qtproject_SRCS
     MathJaxQt6.cpp
     MathJaxQt6Widget.cpp
+    MathJaxQt6GroupBox.cpp
 )
 
 set(qtproject_H
     ../include/MathJaxQt6.h
     ../include/private/MathJaxQt6_private.h
     ../include/MathJaxQt6Widget.h
+    ../include/MathJaxQt6GroupBox.h
 )
 
 set(project_H

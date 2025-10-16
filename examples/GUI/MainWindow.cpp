@@ -14,21 +14,21 @@ CMainWindow::CMainWindow( QWidget *parent ) :
     QMainWindow( parent ),
     fImpl( new Ui::CMainWindow )
 {
+    fImpl->setupUi( this );
+
     NTowel42::CMathJaxQt6::enableDebugConsole( 12345 );
     QLoggingCategory::setFilterRules( ( QStringList() << "*=false" << "js=true" << "Towel42.MathJaxQt6=true" << "Towel42.MathJaxQt6.*=true" ).join( "\n" ) );
-    fEngine = new NTowel42::CMathJaxQt6;
+
+    fEngine = fImpl->mathJaxWidget->engine();
+
     connect(
-        fEngine, &NTowel42::CMathJaxQt6::sigSVGRendered,   //
+        fEngine.get(), &NTowel42::CMathJaxQt6::sigSVGRendered,   //
         [ = ]( const QString & /*tex*/, const QByteArray &svg )   //
         {   //
             fImpl->svgCode->setPlainText( svg );
         } );
-
-    fImpl->setupUi( this );
-
+        
     this->statusBar()->addPermanentWidget( fScaleLabel = new QLabel( this ) );
-
-    fImpl->mathJaxWidget->setEngine( fEngine );
 
     connect( fImpl->mathJaxWidget, &NTowel42::CMathJaxQt6Widget::sigErrorMessage, this, &CMainWindow::slotErrorMessage );
     connect( fImpl->mathJaxWidget, &NTowel42::CMathJaxQt6Widget::sigScaleChanged, this, &CMainWindow::slotScaleChanged );
@@ -50,10 +50,10 @@ CMainWindow::CMainWindow( QWidget *parent ) :
     fImpl->asyncRender->setEnabled( false );
     fImpl->syncRender->setEnabled( false );
 
-    connect( fEngine, &NTowel42::CMathJaxQt6::sigEngineReady, this, &CMainWindow::slotEngineReady );
+    connect( fEngine.get(), &NTowel42::CMathJaxQt6::sigEngineReady, this, &CMainWindow::slotEngineReady );
 
     connect( fImpl->autoSizeToParentWidth, &QCheckBox::toggled, fImpl->mathJaxWidget, &NTowel42::CMathJaxQt6Widget::slotSetAutoSizeToParentWidth );
-    connect( fImpl->autoUpdateMinimumParentSize, &QCheckBox::toggled, fImpl->mathJaxWidget, &NTowel42::CMathJaxQt6Widget::slotSetAutoUpdateMinimumParentSize );
+    connect( fImpl->autoUpdateMinimumParentHeight, &QCheckBox::toggled, fImpl->mathJaxWidget, &NTowel42::CMathJaxQt6Widget::slotSetAutoUpdateMinimumParentHeight );
     connect( fImpl->hideEmptyOrInvalid, &QCheckBox::toggled, fImpl->mathJaxWidget, &NTowel42::CMathJaxQt6Widget::slotHideEmptyOrInvalid );
     connect(
         fImpl->minScale, &QDoubleSpinBox::valueChanged,   //
@@ -79,6 +79,10 @@ CMainWindow::CMainWindow( QWidget *parent ) :
 
 CMainWindow::~CMainWindow()
 {
+    auto item = fImpl->webEngineViewLayout->takeAt( 0 ); // the view is owned by the widget
+    auto widget = item->widget();
+    if ( widget )
+        widget->setParent( nullptr );
 }
 
 void CMainWindow::slotEngineReady( bool /*aOK*/ )
@@ -121,14 +125,14 @@ void CMainWindow::slotScaleChanged( double scale )
 
 void CMainWindow::loadValues()
 {
-    fImpl->autoUpdateMinimumParentSize->blockSignals( true );
+    fImpl->autoUpdateMinimumParentHeight->blockSignals( true );
     fImpl->hideEmptyOrInvalid->blockSignals( true );
     fImpl->minScale->blockSignals( true );
     fImpl->maxScale->blockSignals( true );
     fImpl->pixelsPerFormula->blockSignals( true );
     fImpl->autoSizeToParentWidth->blockSignals( true );
 
-    fImpl->autoUpdateMinimumParentSize->setChecked( fImpl->mathJaxWidget->autoUpdateMinimumParentSize() );
+    fImpl->autoUpdateMinimumParentHeight->setChecked( fImpl->mathJaxWidget->autoUpdateMinimumParentHeight() );
     fImpl->hideEmptyOrInvalid->setChecked( fImpl->mathJaxWidget->hideEmptyOrInvalid() );
     fImpl->autoSizeToParentWidth->setChecked( fImpl->mathJaxWidget->autoSizeToParentWidth() );
 
@@ -137,7 +141,7 @@ void CMainWindow::loadValues()
     fImpl->pixelsPerFormula->setValue( fImpl->mathJaxWidget->numPixelsPerFormula() );
     slotScaleChanged( fImpl->mathJaxWidget->scale() );
 
-    fImpl->autoUpdateMinimumParentSize->blockSignals( false );
+    fImpl->autoUpdateMinimumParentHeight->blockSignals( false );
     fImpl->hideEmptyOrInvalid->blockSignals( false );
     fImpl->minScale->blockSignals( false );
     fImpl->maxScale->blockSignals( false );
