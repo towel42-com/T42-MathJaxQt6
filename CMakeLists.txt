@@ -12,6 +12,3 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory( src )
 add_subdirectory( examples )
-
-set_target_properties( MathJaxQt6-CLIExample_qmlimportscan PROPERTIES FOLDER QtAutoProjects )
-set_target_properties( MathJaxQt6-GUIExample_qmlimportscan PROPERTIES FOLDER QtAutoProjects )

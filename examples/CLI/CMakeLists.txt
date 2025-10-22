@@ -27,8 +27,9 @@ find_package(Qt6 REQUIRED COMPONENTS Core Widgets WebEngineWidgets SvgWidgets )
 include( include.cmake )
 include( ${CMAKE_SOURCE_DIR}/T42-CMakeUtils/QtProject.cmake )
 
-qt_add_executable( ${PROJECT_NAME} 
+qt6_add_executable( ${PROJECT_NAME} 
                 ${_PROJECT_DEPENDENCIES} 
+                MANUAL_FINALIZATION
          )
 
 include_directories( ${CMAKE_BINARY_DIR} )
@@ -58,3 +59,5 @@ DeploySystem( ${PROJECT_NAME} . INSTALL_ONLY 1)
 INSTALL( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin )
 INSTALL( FILES ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.pdb DESTINATION . CONFIGURATIONS Debug RelWithDebInfo )
 
+qt_finalize_target(${PROJECT_NAME})
+set_target_properties( ${PROJECT_NAME}_qmlimportscan PROPERTIES FOLDER QtAutoProjects )

@@ -25,6 +25,8 @@ qt6_add_resources(${PROJECT_NAME} "mathjax"
         "mathjax"
     FILES
         ${QRC_FILES}
+    OUTPUT_TARGETS 
+        MATHJAX_OTHER_TARGETS
 )
 
 qt6_add_resources(${PROJECT_NAME} "MathJaxQt6"
@@ -36,6 +38,8 @@ qt6_add_resources(${PROJECT_NAME} "MathJaxQt6"
         ${CMAKE_CURRENT_SOURCE_DIR}/../assets/MathJaxQt6.html
         ${CMAKE_CURRENT_SOURCE_DIR}/../assets/MathJaxQt6.js
         ${CMAKE_CURRENT_SOURCE_DIR}/../assets/MathJaxQt6Init.js
+    OUTPUT_TARGETS 
+        MATHJAXQT6_OTHER_TARGETS
 )
 
 target_link_libraries( ${PROJECT_NAME}
@@ -59,6 +63,5 @@ endif()
 INSTALL( FILES $<TARGET_FILE_DIR:${PROJECT_NAME}>/$<TARGET_FILE_BASE_NAME:${PROJECT_NAME}>.dll DESTINATION . )
 INSTALL( FILES $<TARGET_FILE_DIR:${PROJECT_NAME}>/$<TARGET_FILE_BASE_NAME:${PROJECT_NAME}>.pdb DESTINATION . CONFIGURATIONS Debug RelWithDebInfo )
 
-set_target_properties( MathJaxQt6_other_files PROPERTIES FOLDER QtAutoProjects )
-#set_target_properties( Qt6MathJax_resources_1 PROPERTIES FOLDER QtAutoProjects )
-#set_target_properties( Qt6MathJax_resources_2 PROPERTIES FOLDER QtAutoProjects )
+set_target_properties( ${MATHJAX_OTHER_TARGETS} PROPERTIES FOLDER QtAutoProjects )
+set_target_properties( ${MATHJAXQT6_OTHER_TARGETS} PROPERTIES FOLDER QtAutoProjects )
