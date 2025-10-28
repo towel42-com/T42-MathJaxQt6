@@ -4,5 +4,5 @@
 	branch = trunk
 [submodule "mathjax"]
 	path = mathjax
-	url = http://github.com/towel42-com/MathJax-src
+	url = https://github.com/towel42-com/MathJax-src
 	branch = trunk
