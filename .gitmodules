@@ -5,3 +5,4 @@
 [submodule "mathjax"]
 	path = mathjax
 	url = https://github.com/towel42-com/MathJax-src.git
+    branch = master
