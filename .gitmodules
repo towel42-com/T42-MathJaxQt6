@@ -2,3 +2,7 @@
 	path = T42-CMakeUtils
 	url = https://github.com/towel42-com/T42-CMakeUtils
 	branch = trunk
+[submodule "mathjax"]
+	path = mathjax
+	url = http://github.com/towel42-com/MathJax-src
+	branch = trunk
