@@ -562,11 +562,21 @@ namespace NTowel42
     void CMathJaxQt6::initResources()
     {
         Q_INIT_RESOURCE( MathJaxQt6 );
+        Q_INIT_RESOURCE( mathjax );
 
-        Q_ASSERT( QFile( ":/MathJaxQt6/MathJaxQt6.html" ).exists() );
-        Q_ASSERT( QFile( ":/MathJaxQt6/MathJaxQt6.js" ).exists() );
-        Q_ASSERT( QFile( ":/MathJaxQt6/MathJaxQt6Init.js" ).exists() );
-        if ( !QFile( ":/MathJaxQt6/MathJaxQt6.html" ).exists() || !QFile( ":/MathJaxQt6/MathJaxQt6.js" ).exists() || !QFile( ":/MathJaxQt6/MathJaxQt6Init.js" ).exists() )
+        auto mustExist = QStringList()   //
+                         << ":/MathJaxQt6/MathJaxQt6.html"   //
+                         << ":/MathJaxQt6/MathJaxQt6.js"   //
+                         << ":/MathJaxQt6/MathJaxQt6Init.js"   //
+                         << ":/mathjax/tex-svg-nofont.js";
+        bool requiredMissing = false;
+        for ( auto &&ii : mustExist )
+        {
+            Q_ASSERT( QFile( ii ).exists() );
+            requiredMissing = !QFile( ii ).exists() || requiredMissing;
+        }
+
+        if ( requiredMissing )
         {
             NPrivate::dumpQRC();
         }
