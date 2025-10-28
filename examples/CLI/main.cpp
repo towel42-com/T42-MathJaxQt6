@@ -135,6 +135,11 @@ int main( int argc, char *argv[] )
     int retVal = -1;
     std::cout << "Rendering TeX input: '" << inputTeX.toStdString() << "'" << "\n";
     NTowel42::CMathJaxQt6 engine;
+    if(!engine.initResources())
+    {
+        std::cerr << "Could not initialize the resources\n";
+        return -1;
+    }
     engine.renderSVG(
         inputTeX,   //
         [ &engine, outputFile, &retVal, inputTeX ]( const QString &tex, const std::optional< QByteArray > &svg )   //

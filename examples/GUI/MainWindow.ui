@@ -212,7 +212,7 @@
   <customwidget>
    <class>NTowel42::CMathJaxQt6Widget</class>
    <extends>QWidget</extends>
-   <header>T42-MathJaxQt6/include/MathJaxQt6Widget.h</header>
+   <header>include/MathJaxQt6Widget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

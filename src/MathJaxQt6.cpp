@@ -1,7 +1,6 @@
 ﻿#include "include/MathJaxQt6.h"
 #include "include/private/MathJaxQt6_private.h"
 
-#include "SABUtils/FileUtils.h"
 #include <QDesktopServices>
 #include <QEventLoop>
 #include <QMetaEnum>
@@ -81,18 +80,6 @@ namespace NTowel42
             if ( level == JavaScriptConsoleMessageLevel::ErrorMessageLevel )
             {
                 emit sigErrorMessage( msg );
-            }
-        }
-
-        void dumpQRC()
-        {
-            if ( !T42MathJaxQt6QRC().isDebugEnabled() )
-                return;
-
-            auto files = NSABUtils::NFileUtils::dumpResources( true );
-            for ( auto &&ii : files )
-            {
-                qCDebug( T42MathJaxQt6QRC ) << ii;
             }
         }
 
@@ -559,7 +546,7 @@ namespace NTowel42
         QDesktopServices::openUrl( QUrl( "http://127.0.0.1:12345" ) );
     }
 
-    void CMathJaxQt6::initResources()
+    bool CMathJaxQt6::initResources()
     {
         Q_INIT_RESOURCE( MathJaxQt6 );
         Q_INIT_RESOURCE( mathjax );
@@ -576,9 +563,6 @@ namespace NTowel42
             requiredMissing = !QFile( ii ).exists() || requiredMissing;
         }
 
-        if ( requiredMissing )
-        {
-            NPrivate::dumpQRC();
-        }
+        return !requiredMissing;
     }
 }

@@ -50,7 +50,7 @@ namespace NTowel42
         QWidget *webEngineViewWidget() const;
 
         static void enableDebugConsole( int port );
-        static void initResources();
+        static [[nodiscard]] bool initResources();
     public Q_SLOTS:
         void slotRenderSVG( const QString &texCode );
     Q_SIGNALS:

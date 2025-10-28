@@ -1,7 +1,7 @@
 #ifndef MATHJAXGROUPBOX_H
 #define MATHJAXGROUPBOX_H
 
-#include "T42-MathJaxQt6/include/MathJaxQt6Export.h"
+#include "include/MathJaxQt6Export.h"
 
 #include <QGroupBox>
 #include <QByteArray>

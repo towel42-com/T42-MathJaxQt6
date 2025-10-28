@@ -1,7 +1,7 @@
 #ifndef MATHJAXWIDGET_H
 #define MATHJAXWIDGET_H
 
-#include "T42-MathJaxQt6/include/MathJaxQt6Export.h"
+#include "include/MathJaxQt6Export.h"
 
 #include <QWidget>
 #include <QByteArray>

@@ -20,6 +20,12 @@ CMainWindow::CMainWindow( QWidget *parent ) :
     QLoggingCategory::setFilterRules( ( QStringList() << "*=false" << "js=true" << "Towel42.MathJaxQt6=true" << "Towel42.MathJaxQt6.*=true" ).join( "\n" ) );
 
     fEngine = fImpl->mathJaxWidget->engine();
+    if ( !fEngine->initResources() )
+    {
+        QMessageBox::critical( this, tr( "Could not initialize Resources" ), tr( "Could not initialize Resources" ) );
+        deleteLater();
+        return;
+    }
 
     connect(
         fEngine.get(), &NTowel42::CMathJaxQt6::sigSVGRendered,   //
@@ -27,7 +33,7 @@ CMainWindow::CMainWindow( QWidget *parent ) :
         {   //
             fImpl->svgCode->setPlainText( svg );
         } );
-        
+
     this->statusBar()->addPermanentWidget( fScaleLabel = new QLabel( this ) );
 
     connect( fImpl->mathJaxWidget, &NTowel42::CMathJaxQt6Widget::sigErrorMessage, this, &CMainWindow::slotErrorMessage );
@@ -79,7 +85,7 @@ CMainWindow::CMainWindow( QWidget *parent ) :
 
 CMainWindow::~CMainWindow()
 {
-    auto item = fImpl->webEngineViewLayout->takeAt( 0 ); // the view is owned by the widget
+    auto item = fImpl->webEngineViewLayout->takeAt( 0 );   // the view is owned by the widget
     auto widget = item->widget();
     if ( widget )
         widget->setParent( nullptr );
@@ -117,7 +123,7 @@ void CMainWindow::slotSyncRender()
 
 void CMainWindow::slotScaleChanged( double scale )
 {
-    fScaleLabel->setText( QString( "Scale: %1%" ).arg( scale* 100, 0, 'f', 4 ) );
+    fScaleLabel->setText( QString( "Scale: %1%" ).arg( scale * 100, 0, 'f', 4 ) );
     fImpl->scale->blockSignals( true );
     fImpl->scale->setValue( scale );
     fImpl->scale->blockSignals( false );
