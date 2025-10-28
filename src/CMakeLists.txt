@@ -16,7 +16,7 @@ add_library(
     ../assets/MathJaxQt6.html
 )
 
-file( GLOB_RECURSE QRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../mathjax/* )
+file( GLOB_RECURSE QRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/../mathjax/bundle/* )
 list(FILTER QRC_FILES EXCLUDE REGEX ".git.*")
 qt6_add_resources(${PROJECT_NAME} "mathjax"
     PREFIX
