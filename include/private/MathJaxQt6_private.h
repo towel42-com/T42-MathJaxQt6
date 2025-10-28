@@ -14,7 +14,7 @@ class QWebEngineView;
 class QWebEngineLoadingInfo;
 class QWebEngineNewWindowRequest;
 class QWebChannel;
-
+class QDateTime;
 namespace NTowel42
 {
     class CMathJaxQt6;
@@ -36,7 +36,7 @@ namespace NTowel42
         struct SQueuedRequests
         {
             SQueuedRequests( const QString &orig, const std::optional< QString > &cleanedTexCode );
-            
+
             QString fOrig;
             QString fClean;
         };
@@ -57,10 +57,10 @@ namespace NTowel42
             bool checkQueue( const QString &texCode );
 
             // detect whether a string has already been compiled in the past (i.e., is in cache):
-            std::optional< QByteArray > beenCreated( const QString &code ) const;
+            std::optional< std::pair< QByteArray, QDateTime > > beenCreated( const QString &code ) const;
             void clearCache( const QString &code );
-            void addToCache( const SQueuedRequests &queuedRequest, const QByteArray &svg );
-            void addToCache( const QString &texCode, const std::optional< QString > &cleanedTexCode, const QByteArray &svg );
+            void addToCache( const SQueuedRequests &queuedRequest, const QByteArray &svg, const std::optional< QDateTime > &renderedDateTime = {} );
+            void addToCache( const QString &texCode, const std::optional< QString > &cleanedTexCode, const QDateTime &renderedDateTime, const QByteArray &svg );
 
             QString errorMessage() const;
             QWebEngineView *webEngineView() const;
@@ -91,7 +91,7 @@ namespace NTowel42
             bool fRunning{ false };
             bool fEngineReady{ false };   // false unless the webengine loads the qrc correctly
 
-            mutable std::unordered_map< QString, QByteArray > fSVGCache;
+            mutable std::unordered_map< QString, std::pair< QByteArray, QDateTime > > fSVGCache;
 
             std::list< SQueuedRequests > fQueue;
         };

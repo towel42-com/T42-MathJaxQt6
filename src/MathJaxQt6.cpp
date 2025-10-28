@@ -26,7 +26,6 @@ Q_LOGGING_CATEGORY( T42MathJaxQt6Console, "Towel42.MathJaxQt6.Console", QtMsgTyp
 Q_LOGGING_CATEGORY( T42MathJaxQt6QRC, "Towel42.MathJaxQt6.QRC", QtMsgType::QtDebugMsg );
 Q_LOGGING_CATEGORY( T42MathJaxQt6Widget, "Towel42.MathJaxQt6.Widget", QtMsgType::QtDebugMsg );
 
-
 #undef qCDebug
 #undef qCInfo
 
@@ -91,7 +90,7 @@ namespace NTowel42
                 return;
 
             auto files = NSABUtils::NFileUtils::dumpResources( true );
-            for(auto && ii : files)
+            for ( auto &&ii : files )
             {
                 qCDebug( T42MathJaxQt6QRC ) << ii;
             }
@@ -171,7 +170,7 @@ namespace NTowel42
             return fView;
         }
 
-        std::optional< QByteArray > CMathJaxQt6::beenCreated( const QString &texCode ) const
+        std::optional< std::pair< QByteArray, QDateTime > > CMathJaxQt6::beenCreated( const QString &texCode ) const
         {
             auto cleanedFormula = cleanupFormula( texCode );
             auto pos = fSVGCache.find( cleanedFormula );
@@ -191,15 +190,16 @@ namespace NTowel42
             fSVGCache.erase( pos );
         }
 
-        void CMathJaxQt6::addToCache( const QString &texCode, const std::optional< QString > &cleanedTexCode, const QByteArray &svg )
+        void CMathJaxQt6::addToCache( const QString &texCode, const std::optional< QString > &cleanedTexCode, const QDateTime &renderedDateTime, const QByteArray &svg )
         {
-            addToCache( SQueuedRequests( texCode, cleanedTexCode ), svg );
+            addToCache( SQueuedRequests( texCode, cleanedTexCode ), svg, renderedDateTime );
         }
 
-        void CMathJaxQt6::addToCache( const SQueuedRequests &request, const QByteArray &svg )
+        void CMathJaxQt6::addToCache( const SQueuedRequests &request, const QByteArray &svg, const std::optional< QDateTime > &renderedDateTime )
         {
-            fSVGCache[ request.fClean ] = svg;
-            fSVGCache[ request.fOrig ] = svg;
+            auto dt = ( renderedDateTime.has_value() && renderedDateTime.value().isValid() ) ? renderedDateTime.value() : QDateTime::currentDateTime();
+            fSVGCache[ request.fClean ] = { svg, dt };
+            fSVGCache[ request.fOrig ] = { svg, dt };
         }
 
         void CMathJaxQt6::renderSVG( const QString &texCode )
@@ -212,10 +212,10 @@ namespace NTowel42
             auto cachedValue = beenCreated( texCode );
             if ( cachedValue.has_value() )
             {
-                emit sigSVGRendered( texCode, cachedValue.value() );
+                emit sigSVGRendered( texCode, cachedValue.value().first );
                 if ( postRenderFunction )
                 {
-                    postRenderFunction( texCode, cachedValue.value() );
+                    postRenderFunction( texCode, cachedValue.value().first );
                     parent()->blockSignals( false );
                 }
                 return;
@@ -505,14 +505,22 @@ namespace NTowel42
         renderSVG( texCode );
     }
 
-    void CMathJaxQt6::addToCache( const QString &texCode, const std::optional< QString > &cleanedTexCode, const QByteArray &svg )
+    void CMathJaxQt6::addToCache( const QString &texCode, const std::optional< QString > &cleanedTexCode, const QDateTime &renderedDateTime, const QByteArray &svg )
     {
-        fImpl->addToCache( texCode, cleanedTexCode, svg );
+        fImpl->addToCache( texCode, cleanedTexCode, renderedDateTime, svg );
     }
 
     bool CMathJaxQt6::beenCreated( const QString &texCode ) const
     {
         return fImpl->beenCreated( texCode ).has_value();
+    }
+
+    std::optional< QDateTime > CMathJaxQt6::renderedDate( const QString &texCode ) const
+    {
+        auto retVal = fImpl->beenCreated( texCode );
+        if ( !retVal.has_value() )
+            return {};
+        return retVal.value().second;
     }
 
     void CMathJaxQt6::clearCache( const QString &texCode )
