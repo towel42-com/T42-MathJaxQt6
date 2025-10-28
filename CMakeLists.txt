@@ -1,8 +1,10 @@
 cmake_minimum_required( VERSION 3.31 )
 project( MathJaxQt6-root )
 
-file( REAL_PATH ~/Dropbox/home/bin/MathJaxQt6 CMAKE_INSTALL_PREFIX EXPAND_TILDE)
-MESSAGE( STATUS "Installing to ${CMAKE_INSTALL_PREFIX}" )
+if ( ROOTPROJECT )
+    file( REAL_PATH ~/Dropbox/home/bin/MathJaxQt6 CMAKE_INSTALL_PREFIX EXPAND_TILDE)
+    MESSAGE( STATUS "Installing to ${CMAKE_INSTALL_PREFIX}" )
+endif()
 
 SET(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/T42-CMakeUtils/Modules ${CMAKE_MODULE_PATH})
 
