@@ -72,6 +72,7 @@ qt6_add_resources(${PROJECT_NAME} "MathJaxQt6"
         MATHJAXQT6_OTHER_TARGETS
 )
 
+target_include_directories( ${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/.. )
 target_link_libraries( ${PROJECT_NAME}
       PUBLIC
           ${project_pub_DEPS}
