@@ -60,6 +60,7 @@ namespace NTowel42
 
         bool svgValid() const;
 
+        bool isCurrentlyVisible() const;
     Q_SIGNALS:
         void sigErrorMessage( const QString &errorMsg );
         void sigScaleChanged( double scaleValue );

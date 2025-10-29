@@ -299,7 +299,7 @@ namespace NTowel42
     {
         Q_ASSERT( fEngine );
 
-        if ( isFormula( formula ) )
+        if ( isFormula( formula ) && isCurrentlyVisible() )
             return;
 
         if ( controllersHaveFormula( formula ) )
@@ -397,6 +397,14 @@ namespace NTowel42
         if ( !hide )
             emit sigScaleChanged( fScale );
         return !hide;
+    }
+
+    bool CMathJaxQt6Widget::isCurrentlyVisible() const
+    {
+        if ( mathJaxGroupBox() )
+            return mathJaxGroupBox()->isVisible();
+        else
+            return isVisible();
     }
 
     void CMathJaxQt6Widget::slotSetNumPixelsPerFormula( int pixelsPerFormula )
