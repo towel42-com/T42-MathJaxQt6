@@ -86,7 +86,7 @@ namespace NTowel42
         bool showWidget( bool ignoreValid = false );
 
         void setMathJaxVisible( bool hide );
-        CMathJaxQt6GroupBox * mathJaxGroupBox() const;
+        CMathJaxQt6GroupBox *mathJaxGroupBox() const;
 
         void setupUI();
 

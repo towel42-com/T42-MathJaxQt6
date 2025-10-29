@@ -34,7 +34,7 @@ namespace NTowel42
         void renderSVG( const QString &texCode, const std::function< void( const QString &tex, const std::optional< QByteArray > &svg ) > &function, const std::function< void( const QString &msg ) > &onErrorMessage = {} );
 
         // allows for pre-loading of formulas and their SVG
-        void addToCache( const QString &texCode, const std::optional< QString > &cleanedTexCode, const QDateTime &renderedDateTime, const QByteArray &svg );
+        void addToCache( const QString &texCode, const std::optional< QString > &cleanedTexCode, const QDateTime &renderedDateTime, const QByteArray &svg, bool svgNeedsDecoding );
 
         // detect whether a string has already been compiled in the past (i.e., is in cache):
         std::optional< QDateTime > renderedDate( const QString &texCode ) const;

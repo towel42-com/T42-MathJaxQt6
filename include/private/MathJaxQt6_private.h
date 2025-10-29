@@ -41,6 +41,15 @@ namespace NTowel42
             QString fClean;
         };
 
+        struct SSVGCacheInfo
+        {
+            std::optional< QByteArray > fSVG;
+            QByteArray fBase64;
+            std::optional< QDateTime > fRenderedDate;
+
+            QByteArray svg();
+        };
+
         class CMathJaxQt6 : public QObject
         {
             Q_OBJECT
@@ -57,10 +66,10 @@ namespace NTowel42
             bool checkQueue( const QString &texCode );
 
             // detect whether a string has already been compiled in the past (i.e., is in cache):
-            std::optional< std::pair< QByteArray, QDateTime > > beenCreated( const QString &code ) const;
+            std::optional< SSVGCacheInfo > beenCreated( const QString &code ) const;
             void clearCache( const QString &code );
-            void addToCache( const SQueuedRequests &queuedRequest, const QByteArray &svg, const std::optional< QDateTime > &renderedDateTime = {} );
-            void addToCache( const QString &texCode, const std::optional< QString > &cleanedTexCode, const QDateTime &renderedDateTime, const QByteArray &svg );
+            void addToCache( const SQueuedRequests &queuedRequest, const QByteArray &svg, const std::optional< QDateTime > &renderedDateTime, bool svgNeedsDecoding );
+            void addToCache( const QString &texCode, const std::optional< QString > &cleanedTexCode, const QDateTime &renderedDateTime, const QByteArray &svg, bool svgNeedsDecoding );
 
             QString errorMessage() const;
             QWebEngineView *webEngineView() const;
@@ -91,7 +100,7 @@ namespace NTowel42
             bool fRunning{ false };
             bool fEngineReady{ false };   // false unless the webengine loads the qrc correctly
 
-            mutable std::unordered_map< QString, std::pair< QByteArray, QDateTime > > fSVGCache;
+            mutable std::unordered_map< QString, SSVGCacheInfo > fSVGCache;
 
             std::list< SQueuedRequests > fQueue;
         };

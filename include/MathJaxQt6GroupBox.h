@@ -70,7 +70,7 @@ namespace NTowel42
         void updateMathJaxWidgetName();
 
         void setMathJaxVisible( bool visible );
-        
+
     Q_SIGNALS:
         void sigErrorMessage( const QString &errorMsg );
         void sigScaleChanged( double scaleValue );
