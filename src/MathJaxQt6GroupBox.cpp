@@ -68,8 +68,6 @@ namespace NTowel42
         connect( fMathJaxWidget, &CMathJaxQt6Widget::sigSVGRendered, this, &CMathJaxQt6GroupBox::sigSVGRendered );
         connect( fMathJaxWidget, &CMathJaxQt6Widget::sigEngineReady, this, &CMathJaxQt6GroupBox::sigEngineReady );
 
-        void sigScaleChanged( double scaleValue );
-
         hLayout->addWidget( fMathJaxWidget );
     }
 

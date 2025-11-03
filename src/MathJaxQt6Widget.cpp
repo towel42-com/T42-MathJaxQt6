@@ -393,7 +393,7 @@ namespace NTowel42
         bool hide = ignoreValid ? controllersHaveFormula : ( controllersHaveFormula || ( fHideEmptyOrInvalid && !svgValid() ) );
 
         setMathJaxVisible( !hide );
-        
+
         if ( !hide )
             emit sigScaleChanged( fScale );
         return !hide;
@@ -457,12 +457,20 @@ namespace NTowel42
     void CMathJaxQt6Widget::setMathJaxVisible( bool visible )
     {
         if ( mathJaxGroupBox() )
+        {
             mathJaxGroupBox()->setMathJaxVisible( visible );
+            if ( mathJaxGroupBox()->parentWidget() )
+                mathJaxGroupBox()->parentWidget()->updateGeometry();
+        }
         else
+        {
             setVisible( visible );
+            if ( parentWidget() )
+                parentWidget()->updateGeometry();
+        }
     }
 
-    NTowel42::CMathJaxQt6GroupBox * CMathJaxQt6Widget::mathJaxGroupBox() const
+    NTowel42::CMathJaxQt6GroupBox *CMathJaxQt6Widget::mathJaxGroupBox() const
     {
         return dynamic_cast< NTowel42::CMathJaxQt6GroupBox * >( parentWidget() );
     }
