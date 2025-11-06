@@ -302,9 +302,9 @@ namespace NTowel42
         if ( isFormula( formula ) && isCurrentlyVisible() )
             return;
 
+        setMathJaxVisible( false );
         if ( controllersHaveFormula( formula ) )
         {
-            setMathJaxVisible( false );
             return;
         }
 
@@ -312,10 +312,7 @@ namespace NTowel42
         if ( !fFormula.has_value() || fFormula.value().isEmpty() )
             clear();
         else
-        {
-            showWidget();
             fEngine->renderSVG( fFormula.value() );
-        }
     }
 
     void CMathJaxQt6Widget::setFormulaAndWait( const QString &formula )
